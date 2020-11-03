@@ -1,0 +1,19 @@
+{
+  "name": "raise-version",
+  "version": "0.1.0",
+  "description": "Update and publish package version for Gitflow worflow",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ezze/node-raise-version.git"
+  },
+  "author": "Dmitriy Pushkov <ezze@ezze.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ezze/node-raise-version/issues"
+  },
+  "homepage": "https://github.com/ezze/node-raise-version#readme"
+}
