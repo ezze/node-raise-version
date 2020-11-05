@@ -46,9 +46,22 @@ yarn add raise-version --dev
     raise-version <release> [options]
     ```
    
+    Options that are not passed in `[options]` are taken from `.raiseverrc` by default.
+   
     Here is an example using default `.raiseverrc` configuration where patch version is updated in `package.json`, prepended as a title with date to bulleted list of changes in `CHANGELOG.md` file, all changes are commited to two Gitflow workflow branches `master` and `develop` and pushed to remote repository:
     
     ```
     raise-version patch --git-push
     ```
     
+## Programmatical usage
+
+```javascript
+const raiseVersion = require('raise-version');
+raiseVersion({
+  release: 'patch',
+  gitPush: true
+}).catch(function(e) {
+  console.error('Something went wrong');
+});
+```

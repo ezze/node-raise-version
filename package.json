@@ -2,12 +2,13 @@
   "name": "raise-version",
   "version": "0.1.0",
   "description": "Update and publish package version for Gitflow worflow",
-  "main": "index.js",
+  "main": "lib/raiseVersion.js",
   "bin": {
     "raisever": "bin/raiseVersion.js",
     "raise-version": "bin/raiseVersion.js"
   },
   "scripts": {
+    "prepublishOnly": "npm run lint",
     "lint": "eslint bin lib",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
