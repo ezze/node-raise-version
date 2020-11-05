@@ -10,6 +10,7 @@
     "enabled": true,
     "release": "master",
     "development": "develop",
+    "remote": "origin",
     "tag": true,
     "push": false
   }
