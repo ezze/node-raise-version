@@ -29,10 +29,10 @@ yarn add raise-version --dev
         ```
         raise-version init
         ```
+      
+    `.raiseverrc` configuration file will be created.
  
     `raisever` is an alias for `raise-version` CLI command.
-
-    `.raiseverrc` configuration file will be created.
     
 2. Adjust configuration parameters in `.raiseverrc`, use `--help` to see a list of available configuration parameters:
 
