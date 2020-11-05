@@ -1,18 +1,102 @@
 #!/usr/bin/env node
 const yargs = require('yargs');
-const raiseVersion = require('../lib/raiseVersion');
-const { releases } = require('../lib/constants');
 
-yargs
-  .command('* <release> [options]', 'Raise version', yargs => {
-    return yargs.positional('release', {
-      describe: 'Which part of version to update',
-      type: 'string',
-      choices: releases
-    });
-  }, options => raiseVersion(options))
-  .wrap(null)
-  .strict(true)
-  .fail(e => console.error(e))
-  .demandCommand()
-  .parse(process.argv.slice(2));
+const initVersion = require('../lib/initVersion');
+const raiseVersion = require('../lib/raiseVersion');
+
+const { releases } = require('../lib/constants');
+const { flattenRaiseVerRc } = require('../lib/config');
+
+(async() => {
+  const config = await flattenRaiseVerRc();
+  yargs
+    .command('* <release> [options]', 'Raise version', yargs => {
+      const {
+        changelog,
+        changelogPath,
+        changelogPrefix,
+        changelogBullet,
+        git,
+        gitRelease,
+        gitDevelopment,
+        gitTag,
+        gitPush
+      } = config;
+      return yargs
+        .positional('release', {
+          describe: 'Which part of version to update',
+          type: 'string',
+          choices: releases
+        })
+        .option('changelog', {
+          alias: 'c',
+          describe: 'Update version in changelog file',
+          type: 'boolean',
+          default: changelog
+        })
+        .option('changelog-path', {
+          alias: 'f',
+          describe: 'Path to changelog file',
+          type: 'string',
+          default: changelogPath
+        })
+        .option('changelog-prefix', {
+          alias: 'h',
+          describe: 'Prefix for version header in changelog file',
+          type: 'string',
+          default: changelogPrefix
+        })
+        .option('changelog-bullet', {
+          alias: 'b',
+          describe: 'Bullet character for changes\' item in changelog file',
+          type: 'string',
+          default: changelogBullet
+        })
+        .option('git', {
+          alias: 'g',
+          describe: 'Commit updates to git',
+          type: 'boolean',
+          default: git
+        })
+        .option('git-release', {
+          alias: 'r',
+          describe: 'Git release branch',
+          type: 'string',
+          default: gitRelease
+        })
+        .option('git-development', {
+          alias: 'd',
+          describe: 'Git development branch',
+          type: 'string',
+          default: gitDevelopment
+        })
+        .option('git-tag', {
+          alias: 't',
+          describe: 'Create git tag',
+          type: 'boolean',
+          default: gitTag
+        })
+        .option('git-push', {
+          alias: 'p',
+          describe: 'Push git changes to remote repository',
+          type: 'boolean',
+          default: gitPush
+        })
+        .option('skip-package', {
+          alias: 's',
+          describe: 'Don\'t update package.json file'
+        });
+    }, options => raiseVersion(options))
+    .command('init', 'Create default .raiseverrc configuration file', () => {}, () => initVersion())
+    .wrap(null)
+    .strict(true)
+    .fail((message, error) => {
+      if (message) {
+        console.error(message);
+      }
+      console.error(error);
+      process.exit(1);
+    })
+    .demandCommand()
+    .parse(process.argv.slice(2));
+})();

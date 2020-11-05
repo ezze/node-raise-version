@@ -1,0 +1,15 @@
+{
+  "changelog": {
+    "enabled": false,
+    "path": "CHANGELOG.md",
+    "prefix": "###",
+    "bullet": "-"
+  },
+  "git": {
+    "enabled": false,
+    "release": "master",
+    "development": "develop",
+    "tag": true,
+    "push": false
+  }
+}
