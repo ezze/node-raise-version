@@ -1,0 +1,37 @@
+{
+  "name": "raise-version",
+  "version": "0.1.0",
+  "description": "Update and publish package version for Gitflow worflow",
+  "main": "lib/raiseVersion.js",
+  "bin": {
+    "raisever": "bin/raiseVersion.js",
+    "raise-version": "bin/raiseVersion.js"
+  },
+  "scripts": {
+    "prepublishOnly": "npm run lint",
+    "lint": "eslint bin lib",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ezze/node-raise-version.git"
+  },
+  "author": "Dmitriy Pushkov <ezze@ezze.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ezze/node-raise-version/issues"
+  },
+  "homepage": "https://github.com/ezze/node-raise-version#readme",
+  "dependencies": {
+    "camelcase": "^6.2.0",
+    "execa": "^4.1.0",
+    "fs-extra": "^9.0.1",
+    "moment": "^2.29.1",
+    "semver": "^7.3.2",
+    "yargs": "^16.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.12.1",
+    "eslint-config-ezze": "^0.9.0"
+  }
+}

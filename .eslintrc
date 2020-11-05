@@ -1,0 +1,6 @@
+{
+  "extends": "ezze",
+  "env": {
+    "node": true
+  }
+}
