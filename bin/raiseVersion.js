@@ -5,10 +5,12 @@ const initVersion = require('../lib/initVersion');
 const raiseVersion = require('../lib/raiseVersion');
 
 const { releases } = require('../lib/constants');
-const { flattenRaiseVerRc } = require('../lib/config');
+const { detectRaiseVerRcPath, flattenRaiseVerRc } = require('../lib/config');
 
 (async() => {
-  const config = await flattenRaiseVerRc();
+  const raiseVerRcPath = await detectRaiseVerRcPath();
+  const config = await flattenRaiseVerRc(raiseVerRcPath);
+
   yargs
     .command('* <release> [options]', 'Raise version', yargs => {
       const {
