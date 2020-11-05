@@ -1,13 +1,13 @@
 {
   "changelog": {
-    "enabled": false,
+    "enabled": true,
     "path": "CHANGELOG.md",
     "encoding": "utf-8",
     "prefix": "##",
     "bullet": "-"
   },
   "git": {
-    "enabled": false,
+    "enabled": true,
     "release": "master",
     "development": "develop",
     "tag": true,
