@@ -14,6 +14,7 @@ const { flattenRaiseVerRc } = require('../lib/config');
       const {
         changelog,
         changelogPath,
+        changelogEncoding,
         changelogPrefix,
         changelogBullet,
         git,
@@ -22,6 +23,7 @@ const { flattenRaiseVerRc } = require('../lib/config');
         gitTag,
         gitPush
       } = config;
+
       return yargs
         .positional('release', {
           describe: 'Which part of version to update',
@@ -39,6 +41,12 @@ const { flattenRaiseVerRc } = require('../lib/config');
           describe: 'Path to changelog file',
           type: 'string',
           default: changelogPath
+        })
+        .option('changelog-encoding', {
+          alias: 'e',
+          describe: 'Encoding of changelog file',
+          type: 'string',
+          default: changelogEncoding
         })
         .option('changelog-prefix', {
           alias: 'h',

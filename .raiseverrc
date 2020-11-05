@@ -2,7 +2,8 @@
   "changelog": {
     "enabled": false,
     "path": "CHANGELOG.md",
-    "prefix": "###",
+    "encoding": "utf-8",
+    "prefix": "##",
     "bullet": "-"
   },
   "git": {
