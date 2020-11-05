@@ -16,7 +16,7 @@ yarn add raise-version --dev
    
 ## CLI usage
 
-1. Initialize `raise-version` from the root directory of your project:
+1. Initialize `raise-version` from the root directory of your project (optional — if missed then default configuration will be used):
 
     - if installed globally:
 
@@ -45,3 +45,10 @@ yarn add raise-version --dev
     ```
     raise-version <release> [options]
     ```
+   
+    Here is an example using default `.raiseverrc` configuration where patch version is updated in `package.json`, prepended as a title with date to bulleted list of changes in `CHANGELOG.md` file, all changes are commited to two Gitflow workflow branches `master` and `develop` and pushed to remote repository:
+    
+    ```
+    raise-version patch --git-push
+    ```
+    
