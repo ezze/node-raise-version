@@ -1,5 +1,7 @@
 # Changelog
 
+- Option `merge` is added allowing to disable/enable merging commits from `development` branch into `release` branch. 
+
 ## 0.2.1 (2020-11-12)
 
 - Don't validate `release` on `skipUpdate`.
