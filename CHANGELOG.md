@@ -1,6 +1,8 @@
 # Changelog
 
-- Option `merge` is added allowing to disable/enable merging commits from `development` branch into `release` branch. 
+- Options `commit` and `merge` are added in order to make commiting to `development` branch and merging into `release`
+branch independent. 
+- Alias `c` of `changelog` CLI option is changed to `l`.
 
 ## 0.2.1 (2020-11-12)
 

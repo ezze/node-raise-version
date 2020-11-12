@@ -11,6 +11,8 @@
     "release": "master",
     "development": "develop",
     "remote": "origin",
+    "commit": true,
+    "merge": true,
     "all": false,
     "tag": true,
     "push": false
