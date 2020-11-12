@@ -11,6 +11,7 @@
     "release": "master",
     "development": "develop",
     "remote": "origin",
+    "all": false,
     "tag": true,
     "push": false
   }
