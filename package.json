@@ -10,6 +10,7 @@
   "scripts": {
     "prepublishOnly": "npm run lint",
     "lint": "eslint bin lib",
+    "raise": "bin/raiseVersion.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
