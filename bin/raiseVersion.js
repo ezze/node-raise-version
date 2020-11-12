@@ -12,7 +12,7 @@ const { detectRaiseVerRcPath, flattenRaiseVerRc } = require('../lib/config');
   const config = await flattenRaiseVerRc(raiseVerRcPath);
 
   yargs
-    .command('* <release> [options]', 'Raise version', yargs => {
+    .command('* [release] [options]', 'Raise version', yargs => {
       const {
         changelog,
         changelogPath,
