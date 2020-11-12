@@ -106,7 +106,7 @@ const { detectRaiseVerRcPath, flattenRaiseVerRc } = require('../lib/config');
           type: 'boolean',
           default: gitPush
         })
-        .option('skip-package', {
+        .option('skip-update', {
           alias: 's',
           describe: 'Don\'t update package.json file'
         });
