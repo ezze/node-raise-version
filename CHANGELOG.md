@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.3.2 (2020-11-12)
+
 - Updating changelog file is fixed.
 
 ## 0.3.1 (2020-11-12)
