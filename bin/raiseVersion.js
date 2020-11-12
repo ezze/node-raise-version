@@ -23,6 +23,8 @@ const { detectRaiseVerRcPath, flattenRaiseVerRc } = require('../lib/config');
         gitRelease,
         gitDevelopment,
         gitRemote,
+        gitCommit,
+        gitMerge,
         gitAll,
         gitTag,
         gitPush
@@ -35,7 +37,7 @@ const { detectRaiseVerRcPath, flattenRaiseVerRc } = require('../lib/config');
           choices: releases
         })
         .option('changelog', {
-          alias: 'c',
+          alias: 'l',
           describe: 'Update version in changelog file',
           type: 'boolean',
           default: changelog
@@ -87,6 +89,18 @@ const { detectRaiseVerRcPath, flattenRaiseVerRc } = require('../lib/config');
           describe: 'Git remote repository name',
           type: 'string',
           default: gitRemote
+        })
+        .option('git-commit', {
+          alias: 'c',
+          describe: 'Commit changes to development branch',
+          type: 'boolean',
+          default: gitCommit
+        })
+        .option('git-merge', {
+          alias: 'm',
+          describe: 'Merge changes to release branch',
+          type: 'boolean',
+          default: gitMerge
         })
         .option('git-all', {
           alias: 'a',

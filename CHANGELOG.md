@@ -1,5 +1,11 @@
 # Changelog
 
+- Options `commit` and `merge` are added in order to make commiting to `development` branch and merging into `release`
+branch independent. 
+## 0.3.0 (2020-11-12)
+
+- Alias `c` of `changelog` CLI option is changed to `l`.
+
 ## 0.2.1 (2020-11-12)
 
 - Don't validate `release` on `skipUpdate`.
