@@ -1,5 +1,7 @@
 # Changelog
 
+- Don't validate `release` on `skipUpdate`.
+
 ## 0.2.0 (2020-11-12)
 
 - Option `all` to commit all changes is supported.
