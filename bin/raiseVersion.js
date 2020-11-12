@@ -23,6 +23,7 @@ const { detectRaiseVerRcPath, flattenRaiseVerRc } = require('../lib/config');
         gitRelease,
         gitDevelopment,
         gitRemote,
+        gitAll,
         gitTag,
         gitPush
       } = config;
@@ -86,6 +87,12 @@ const { detectRaiseVerRcPath, flattenRaiseVerRc } = require('../lib/config');
           describe: 'Git remote repository name',
           type: 'string',
           default: gitRemote
+        })
+        .option('git-all', {
+          alias: 'a',
+          describe: 'Commit all changes',
+          type: 'boolean',
+          default: gitAll
         })
         .option('git-tag', {
           alias: 't',
