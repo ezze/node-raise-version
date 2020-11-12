@@ -1,6 +1,6 @@
 {
   "name": "raise-version",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Update and publish package version for Gitflow worflow",
   "main": "lib/raiseVersion.js",
   "bin": {

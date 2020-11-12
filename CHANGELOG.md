@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2 (2020-11-12)
+
+- Updating changelog file is fixed.
+
+## 0.3.1 (2020-11-12)
+
 - Detecting start line of changes for new version in changelog is fixed for multiline changelist items.
 
 ## 0.3.0 (2020-11-12)
