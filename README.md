@@ -25,13 +25,13 @@ yarn add raise-version --dev
     - if installed globally:
 
         ```
-        npx raise-version init
+        raise-version init
         ```
       
     - if installed locally:
     
         ```
-        raise-version init
+        npx raise-version init
         ```
       
     `.raiseverrc` configuration file will be created.
