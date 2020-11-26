@@ -47,10 +47,12 @@ yarn add raise-version --dev
 3. Make changes to your source code, describe them in changelog file (if used) and raise a version:
 
     ```
-    raise-version <release> [options]
+    raise-version [release] [options]
     ```
+
+    where `release` is one of the following: `major`, `minor`, `patch`.
    
-    Options that are not passed in `[options]` are taken from `.raiseverrc` by default.
+    Options that are not passed in `options` are taken from `.raiseverrc` by default.
    
     Here is an example using default `.raiseverrc` configuration where patch version is updated in `package.json`, prepended as a title with date to bulleted list of changes in `CHANGELOG.md` file, all changes are commited to two Gitflow workflow branches `master` and `develop` and pushed to remote repository:
     
