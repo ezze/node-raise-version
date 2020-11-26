@@ -4,7 +4,7 @@
 [![Downloads/month](https://img.shields.io/npm/dm/raise-version.svg)](https://www.npmjs.com/package/raise-version)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE.md)
 
-Update and publish package version for Gitflow worflow.
+Update and publish package version for Gitflow workflow.
 
 ## Installation
 
