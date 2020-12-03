@@ -1,12 +1,12 @@
-const path = require('path');
-const fs = require('fs-extra');
-const camelcase = require('camelcase');
+import path from 'path';
+import fs from 'fs-extra';
+import camelcase from 'camelcase';
 
-const { raiseVerRcName, defaultRaiseVerConfig } = require('./constants');
-const { findPackageJson } = require('./package');
-const { fileExists } = require('./utils');
+import { raiseVerRcName, defaultRaiseVerConfig } from './constants';
+import { findPackageJson } from './package';
+import { fileExists } from './utils';
 
-async function detectRaiseVerRcPath(workingDirectory = process.cwd()) {
+async function detectRaiseVerRcPath(workingDirectory: string = process.cwd()): Promise<string> {
   const packageJsonPath = await findPackageJson(workingDirectory);
   if (!packageJsonPath) {
     return Promise.reject('Unable to locate "package.json" file.');
@@ -14,9 +14,9 @@ async function detectRaiseVerRcPath(workingDirectory = process.cwd()) {
   return path.resolve(path.dirname(packageJsonPath), raiseVerRcName);
 }
 
-async function flattenRaiseVerRc(raiseVerRcPath) {
-  const result = {};
-  let config;
+async function flattenRaiseVerRc(raiseVerRcPath: string): Promise<RaiseVersionOptions> {
+  const result: Record<string, any> = {};
+  let config: RaiseVersionConfig;
   if (await fileExists(raiseVerRcPath)) {
     config = await readRaiseVerRc(raiseVerRcPath);
   }
@@ -25,7 +25,7 @@ async function flattenRaiseVerRc(raiseVerRcPath) {
   }
   const keys = Object.keys(config);
   keys.forEach(key => {
-    const options = config[key] || {};
+    const options = (config as any)[key] || {};
     const names = Object.keys(options);
     names.forEach(name => {
       const value = options[name];
@@ -37,24 +37,24 @@ async function flattenRaiseVerRc(raiseVerRcPath) {
       }
     });
   });
-  return result;
+  return result as RaiseVersionOptions;
 }
 
-async function readRaiseVerRc(raiseVerRcPath) {
+async function readRaiseVerRc(raiseVerRcPath: string): Promise<any> {
   if (!await fileExists(raiseVerRcPath)) {
     return Promise.reject(`File "${raiseVerRcPath}" doesn't exist.`);
   }
   return fs.readJson(raiseVerRcPath);
 }
 
-async function writeRaiseVerRc(raiseVerRcPath, config) {
+async function writeRaiseVerRc(raiseVerRcPath: string, config: RaiseVersionConfig): Promise<void> {
   if (await fileExists(raiseVerRcPath)) {
     await fs.remove(raiseVerRcPath);
   }
   return fs.writeJson(raiseVerRcPath, config, { spaces: 2 });
 }
 
-module.exports = {
+export {
   detectRaiseVerRcPath,
   flattenRaiseVerRc,
   readRaiseVerRc,

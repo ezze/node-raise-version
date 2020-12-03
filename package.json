@@ -2,15 +2,19 @@
   "name": "raise-version",
   "version": "0.3.2",
   "description": "Update and publish package version for Gitflow worflow",
+  "source": "src/lib/raiseVersion.ts",
   "main": "lib/raiseVersion.js",
   "bin": {
     "raisever": "bin/raiseVersion.js",
     "raise-version": "bin/raiseVersion.js"
   },
+  "types": "src/dtypes.d.ts",
   "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
     "prepublishOnly": "npm run lint",
-    "lint": "eslint bin lib",
-    "raise": "bin/raiseVersion.js",
+    "lint": "eslint src",
+    "raise": "src/bin/raiseVersion.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -32,7 +36,14 @@
     "yargs": "^16.1.0"
   },
   "devDependencies": {
-    "eslint": "^7.12.1",
-    "eslint-config-ezze": "^0.9.0"
+    "@types/fs-extra": "^9.0.4",
+    "@types/node": "^14.14.10",
+    "@types/semver": "^7.3.4",
+    "@types/yargs": "^15.0.11",
+    "@typescript-eslint/eslint-plugin": "^4.9.0",
+    "@typescript-eslint/parser": "^4.9.0",
+    "eslint": "^7.14.0",
+    "eslint-config-ezze-ts": "^0.10.1",
+    "typescript": "^4.1.2"
   }
 }

@@ -1,19 +1,20 @@
-const { releases } = require('./constants');
-const { detectRaiseVerRcPath, flattenRaiseVerRc } = require('./config');
-const { findPackageJson, getPackageJsonVersion, updatePackageJsonVersion } = require('./package');
-const { updateChangeLogVersion } = require('./changeLog');
-const { updateGitRepositoryVersion } = require('./git');
+import { releases } from './constants';
+import { detectRaiseVerRcPath, flattenRaiseVerRc } from './config';
+import { findPackageJson, getPackageJsonVersion, updatePackageJsonVersion } from './package';
+import { updateChangeLogVersion } from './changeLog';
+import { updateGitRepositoryVersion } from './git';
 
-async function raiseVersion(options) {
+async function raiseVersion(options: RaiseVersionOptions): Promise<string> {
   const packageJsonPath = await findPackageJson();
   if (!packageJsonPath) {
-    return Promise.reject('Unable to locate "package.js" file.');
+    return Promise.reject('Unable to locate "package.json" file.');
   }
 
   const raiseVerRcPath = await detectRaiseVerRcPath();
   const rcOptions = await flattenRaiseVerRc(raiseVerRcPath);
 
   const {
+    skipUpdate,
     release,
     changelog,
     changelogPath,
@@ -28,8 +29,7 @@ async function raiseVersion(options) {
     gitMerge,
     gitAll,
     gitTag,
-    gitPush,
-    skipUpdate
+    gitPush
   } = {
     ...rcOptions,
     ...options
@@ -40,11 +40,14 @@ async function raiseVersion(options) {
   if (skipUpdate) {
     version = legacyVersion = await getPackageJsonVersion(packageJsonPath);
   }
-  else {
+  else if (release) {
     if (!releases.includes(release)) {
-      return Promise.reject('Release is not specified or invalid.');
+      return Promise.reject('Release is invalid');
     }
     ({ version, legacyVersion } = await updatePackageJsonVersion(packageJsonPath, release));
+  }
+  else {
+    return Promise.reject('Release is not specified');
   }
 
   // Updating changelog
@@ -82,4 +85,4 @@ async function raiseVersion(options) {
   return version;
 }
 
-module.exports = raiseVersion;
+export default raiseVersion;

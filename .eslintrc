@@ -1,5 +1,5 @@
 {
-  "extends": "ezze",
+  "extends": "ezze-ts",
   "env": {
     "node": true
   }

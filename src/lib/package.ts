@@ -1,11 +1,11 @@
-const path = require('path');
-const fs = require('fs-extra');
-const semver = require('semver');
+import path from 'path';
+import fs from 'fs-extra';
+import semver, { ReleaseType } from 'semver';
 
-const { releases } = require('./constants');
-const { fileExists } = require('./utils');
+import { releases } from './constants';
+import { fileExists } from './utils';
 
-async function findPackageJson(workingDirectoryPath = process.cwd()) {
+async function findPackageJson(workingDirectoryPath = process.cwd()): Promise<string | null> {
   const packageJsonPath = path.resolve(workingDirectoryPath, 'package.json');
   if (await fileExists(packageJsonPath)) {
     return packageJsonPath;
@@ -18,12 +18,17 @@ async function findPackageJson(workingDirectoryPath = process.cwd()) {
   return findPackageJson(pathParts.join(path.sep));
 }
 
-async function getPackageJsonVersion(packageJsonPath) {
+async function getPackageJsonVersion(packageJsonPath: string): Promise<string> {
   const packageJson = await fs.readJson(packageJsonPath);
   return packageJson.version;
 }
 
-async function updatePackageJsonVersion(packageJsonPath, release, options = {}) {
+async function updatePackageJsonVersion(packageJsonPath: string, release: string, options: {
+  write?: boolean;
+} = {}): Promise<{
+  version: string;
+  legacyVersion: string;
+}> {
   const { write = true } = options;
 
   console.log(`Updating "${packageJsonPath}"...`);
@@ -31,10 +36,20 @@ async function updatePackageJsonVersion(packageJsonPath, release, options = {}) 
   const packageJson = await fs.readJson(packageJsonPath);
   const { version: legacyVersion } = packageJson;
   if (!semver.valid(legacyVersion)) {
-    return Promise.reject('Version property is not specified or invalid.');
+    return Promise.reject('Version property is not specified or invalid');
   }
 
-  const version = semver.valid(release) ? release : semver.inc(legacyVersion, release);
+  let version: string | null;
+  if (semver.valid(release)) {
+    version = release as string;
+  }
+  else {
+    version = semver.inc(legacyVersion, release as ReleaseType);
+  }
+  if (!version) {
+    return Promise.reject('Unable to increase release version');
+  }
+
   const updateLabel = `${legacyVersion} => ${version}`;
   let prefixLabel = releases.includes(release) ? release : '';
   if (!prefixLabel) {
@@ -57,7 +72,7 @@ async function updatePackageJsonVersion(packageJsonPath, release, options = {}) 
   return { version, legacyVersion };
 }
 
-module.exports = {
+export {
   findPackageJson,
   getPackageJsonVersion,
   updatePackageJsonVersion

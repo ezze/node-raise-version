@@ -1,6 +1,6 @@
-const fs = require('fs-extra');
+import fs from 'fs-extra';
 
-async function fileExists(filePath) {
+async function fileExists(filePath: string): Promise<boolean> {
   try {
     return (await fs.stat(filePath)).isFile();
   }
@@ -9,6 +9,6 @@ async function fileExists(filePath) {
   }
 }
 
-module.exports = {
+export {
   fileExists
 };

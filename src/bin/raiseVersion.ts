@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-const yargs = require('yargs');
+import yargs from 'yargs';
+import initVersion from '../lib/initVersion';
+import raiseVersion from '../lib/raiseVersion';
 
-const initVersion = require('../lib/initVersion');
-const raiseVersion = require('../lib/raiseVersion');
-
-const { releases } = require('../lib/constants');
-const { detectRaiseVerRcPath, flattenRaiseVerRc } = require('../lib/config');
+import { releases } from '../lib/constants';
+import { detectRaiseVerRcPath, flattenRaiseVerRc } from '../lib/config';
 
 (async() => {
   const raiseVerRcPath = await detectRaiseVerRcPath();
@@ -124,8 +123,8 @@ const { detectRaiseVerRcPath, flattenRaiseVerRc } = require('../lib/config');
           alias: 's',
           describe: 'Don\'t update package.json file'
         });
-    }, options => raiseVersion(options))
-    .command('init', 'Create default .raiseverrc configuration file', () => {}, () => initVersion())
+    }, options => raiseVersion(options as unknown as RaiseVersionOptions))
+    .command('init', 'Create default .raiseverrc configuration file', yargs => yargs, () => initVersion())
     .wrap(null)
     .strict(true)
     .fail((message, error) => {

@@ -1,10 +1,12 @@
-const fs = require('fs-extra');
-const semver = require('semver');
-const moment = require('moment');
+import fs from 'fs-extra';
+import semver from 'semver';
+import moment from 'moment';
 
-const { fileExists } = require('./utils');
+import { fileExists } from './utils';
 
-async function readChangeLog(filePath, options = {}) {
+async function readChangeLog(filePath: string, options: {
+  encoding?: string;
+} = {}): Promise<string[]> {
   const { encoding = 'utf-8' } = options;
   if (!await fileExists(filePath)) {
     return Promise.reject(`Changelog file "${filePath}" doesn't exist.`);
@@ -12,7 +14,11 @@ async function readChangeLog(filePath, options = {}) {
   return (await fs.readFile(filePath, { encoding })).split('\n');
 }
 
-async function updateChangeLogVersion(changeLogPath, version, options = {}) {
+async function updateChangeLogVersion(changeLogPath: string, version: string, options: {
+  encoding?: string;
+  prefix?: string;
+  bullet?: string;
+} = {}): Promise<void> {
   console.log(`Updating "${changeLogPath}"...`);
 
   const { prefix = '##', bullet = '-' } = options;
@@ -79,7 +85,7 @@ async function updateChangeLogVersion(changeLogPath, version, options = {}) {
   console.log(`Version in "${changeLogPath}" is updated.`);
 }
 
-module.exports = {
+export {
   readChangeLog,
   updateChangeLogVersion
 };

@@ -1,6 +1,11 @@
-const execa = require('execa');
+import execa from 'execa';
 
-async function updateGitRepositoryVersion(version, options = {}) {
+declare interface UpdateGitRepositoryVersionOptions extends GitOptions {
+  packageJsonPath: string;
+  changeLogPath: string | null;
+}
+
+async function updateGitRepositoryVersion(version: string, options: UpdateGitRepositoryVersionOptions): Promise<void> {
   console.log('Updating git repository...');
 
   const {
@@ -97,7 +102,7 @@ async function updateGitRepositoryVersion(version, options = {}) {
     console.error(`- ${development} commited: ${developmentCommited}`);
     console.error(`- tagged: ${tagged}`);
 
-    const gitHardReset = async branch => {
+    const gitHardReset = async(branch: string) => {
       const stashed = await gitStashAdd();
       const current = await gitCurrentBranch();
       const checkout = current !== branch;
@@ -126,13 +131,17 @@ async function updateGitRepositoryVersion(version, options = {}) {
   }
 }
 
-async function executeGitCommand(gitCommand) {
+async function executeGitCommand(gitCommand: string): Promise<execa.ExecaChildProcess> {
   const command = `git ${gitCommand}`;
   console.log(`$ ${command}`);
   try {
     const execaCommand = execa.command(command);
-    execaCommand.stdout.pipe(process.stdout);
-    execaCommand.stderr.pipe(process.stderr);
+    if (execaCommand.stdout) {
+      execaCommand.stdout.pipe(process.stdout);
+    }
+    if (execaCommand.stderr) {
+      execaCommand.stderr.pipe(process.stderr);
+    }
     await execaCommand;
     return execaCommand;
   }
@@ -151,7 +160,7 @@ async function gitDiffCached() {
   return command.stdout ? command.stdout.split('\n') : [];
 }
 
-async function gitCheckout(branch) {
+async function gitCheckout(branch: string) {
   return executeGitCommand(`checkout ${branch}`);
 }
 
@@ -174,37 +183,37 @@ async function gitStashList() {
   return command.stdout ? command.stdout.split('\n') : [];
 }
 
-async function gitAdd(filePaths) {
+async function gitAdd(filePaths: Array<string> | string) {
   if (!Array.isArray(filePaths)) {
     filePaths = [filePaths];
   }
   return executeGitCommand(`add ${filePaths.map(filePath => escapeWhitespaces(filePath)).join(' ')}`);
 }
 
-async function gitCommit(message) {
+async function gitCommit(message: string) {
   return executeGitCommand(`commit -m ${escapeWhitespaces(message)}`);
 }
 
-async function gitMerge(branch, message) {
+async function gitMerge(branch: string, message: string) {
   return executeGitCommand(`merge --no-ff ${branch} -m ${escapeWhitespaces(message)}`);
 }
 
-async function gitTag(version, message) {
+async function gitTag(version: string, message?: string) {
   return executeGitCommand(`tag -a ${version} -m ${escapeWhitespaces(message ? message : version)}`);
 }
 
-async function gitRemoveTag(version) {
+async function gitRemoveTag(version: string) {
   return executeGitCommand(`tag -d ${version}`);
 }
 
-async function gitPush(remote, entity) {
+async function gitPush(remote: string, entity: string) {
   await executeGitCommand(`push ${remote} ${entity}`);
 }
 
-function escapeWhitespaces(message) {
+function escapeWhitespaces(message: string) {
   return message.replace(/ /g, '\\ ');
 }
 
-module.exports = {
+export {
   updateGitRepositoryVersion
 };
