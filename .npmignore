@@ -3,3 +3,5 @@
 .gitgnore
 .raiseverrc
 *.log
+src
+tsconfig.json
