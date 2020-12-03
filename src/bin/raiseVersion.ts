@@ -35,6 +35,10 @@ import { detectRaiseVerRcPath, flattenRaiseVerRc } from '../lib/config';
           type: 'string',
           choices: releases
         })
+        .option('skip-update', {
+          alias: 's',
+          describe: 'Don\'t update package.json file'
+        })
         .option('changelog', {
           alias: 'l',
           describe: 'Update version in changelog file',
@@ -118,10 +122,6 @@ import { detectRaiseVerRcPath, flattenRaiseVerRc } from '../lib/config';
           describe: 'Push git changes to remote repository',
           type: 'boolean',
           default: gitPush
-        })
-        .option('skip-update', {
-          alias: 's',
-          describe: 'Don\'t update package.json file'
         });
     }, options => raiseVersion(options as unknown as RaiseVersionOptions))
     .command('init', 'Create default .raiseverrc configuration file', yargs => yargs, () => initVersion())
