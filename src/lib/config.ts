@@ -6,7 +6,7 @@ import { raiseVerRcName, defaultRaiseVerConfig } from './constants';
 import { findPackageJson } from './package';
 import { fileExists } from './utils';
 
-async function detectRaiseVerRcPath(workingDirectory: string = process.cwd()): Promise<string> {
+export async function detectRaiseVerRcPath(workingDirectory: string = process.cwd()): Promise<string> {
   const packageJsonPath = await findPackageJson(workingDirectory);
   if (!packageJsonPath) {
     return Promise.reject('Unable to locate "package.json" file.');
@@ -14,7 +14,7 @@ async function detectRaiseVerRcPath(workingDirectory: string = process.cwd()): P
   return path.resolve(path.dirname(packageJsonPath), raiseVerRcName);
 }
 
-async function flattenRaiseVerRc(raiseVerRcPath: string): Promise<RaiseVersionOptions> {
+export async function flattenRaiseVerRc(raiseVerRcPath: string): Promise<RaiseVersionOptions> {
   const result: Record<string, any> = {};
   let config: RaiseVersionConfig;
   if (await fileExists(raiseVerRcPath)) {
@@ -40,23 +40,16 @@ async function flattenRaiseVerRc(raiseVerRcPath: string): Promise<RaiseVersionOp
   return result as RaiseVersionOptions;
 }
 
-async function readRaiseVerRc(raiseVerRcPath: string): Promise<any> {
+export async function readRaiseVerRc(raiseVerRcPath: string): Promise<any> {
   if (!await fileExists(raiseVerRcPath)) {
     return Promise.reject(`File "${raiseVerRcPath}" doesn't exist.`);
   }
   return fs.readJson(raiseVerRcPath);
 }
 
-async function writeRaiseVerRc(raiseVerRcPath: string, config: RaiseVersionConfig): Promise<void> {
+export async function writeRaiseVerRc(raiseVerRcPath: string, config: RaiseVersionConfig): Promise<void> {
   if (await fileExists(raiseVerRcPath)) {
     await fs.remove(raiseVerRcPath);
   }
   return fs.writeJson(raiseVerRcPath, config, { spaces: 2 });
 }
-
-export {
-  detectRaiseVerRcPath,
-  flattenRaiseVerRc,
-  readRaiseVerRc,
-  writeRaiseVerRc
-};

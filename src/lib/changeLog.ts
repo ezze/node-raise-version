@@ -4,7 +4,7 @@ import moment from 'moment';
 
 import { fileExists } from './utils';
 
-async function readChangeLog(filePath: string, options: {
+export async function readChangeLog(filePath: string, options: {
   encoding?: string;
 } = {}): Promise<string[]> {
   const { encoding = 'utf-8' } = options;
@@ -14,7 +14,7 @@ async function readChangeLog(filePath: string, options: {
   return (await fs.readFile(filePath, { encoding })).split('\n');
 }
 
-async function updateChangeLogVersion(changeLogPath: string, version: string, options: {
+export async function updateChangeLogVersion(changeLogPath: string, version: string, options: {
   encoding?: string;
   prefix?: string;
   bullet?: string;
@@ -84,8 +84,3 @@ async function updateChangeLogVersion(changeLogPath: string, version: string, op
   await fs.writeFile(changeLogPath, lines.join('\n'), options);
   console.log(`Version in "${changeLogPath}" is updated.`);
 }
-
-export {
-  readChangeLog,
-  updateChangeLogVersion
-};

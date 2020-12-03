@@ -1,5 +1,7 @@
 .idea
 bin
 lib
+!test/bin
+!test/lib
 node_modules
 *.log

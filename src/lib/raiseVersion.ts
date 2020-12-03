@@ -4,10 +4,10 @@ import { findPackageJson, getPackageJsonVersion, updatePackageJsonVersion } from
 import { updateChangeLogVersion } from './changeLog';
 import { updateGitRepositoryVersion } from './git';
 
-async function raiseVersion(options: RaiseVersionOptions): Promise<string> {
+export default async function raiseVersion(options: RaiseVersionOptions): Promise<string> {
   const packageJsonPath = await findPackageJson();
   if (!packageJsonPath) {
-    return Promise.reject('Unable to locate "package.json" file.');
+    return Promise.reject('Unable to locate "package.json" file');
   }
 
   const raiseVerRcPath = await detectRaiseVerRcPath();
@@ -84,5 +84,3 @@ async function raiseVersion(options: RaiseVersionOptions): Promise<string> {
 
   return version;
 }
-
-export default raiseVersion;

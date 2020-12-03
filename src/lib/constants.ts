@@ -1,16 +1,16 @@
-const raiseVerRcName = '.raiseverrc';
+export const raiseVerRcName = '.raiseverrc';
 
-const RELEASE_MAJOR = 'major';
-const RELEASE_MINOR = 'minor';
-const RELEASE_PATCH = 'patch';
+export const RELEASE_MAJOR = 'major';
+export const RELEASE_MINOR = 'minor';
+export const RELEASE_PATCH = 'patch';
 
-const releases: Array<string> = [
+export const releases: Array<string> = [
   RELEASE_MAJOR,
   RELEASE_MINOR,
   RELEASE_PATCH
 ];
 
-const defaultChangeLogConfig: ChangelogConfig = {
+export const defaultChangeLogConfig: ChangelogConfig = {
   enabled: true,
   path: 'CHANGELOG.md',
   encoding: 'utf-8',
@@ -18,7 +18,7 @@ const defaultChangeLogConfig: ChangelogConfig = {
   bullet: '-'
 };
 
-const defaultGitConfig: GitConfig = {
+export const defaultGitConfig: GitConfig = {
   enabled: true,
   release: 'master',
   development: 'develop',
@@ -30,18 +30,7 @@ const defaultGitConfig: GitConfig = {
   push: false
 };
 
-const defaultRaiseVerConfig: RaiseVersionConfig = {
+export const defaultRaiseVerConfig: RaiseVersionConfig = {
   changelog: defaultChangeLogConfig,
   git: defaultGitConfig
-};
-
-export {
-  raiseVerRcName,
-  defaultChangeLogConfig,
-  defaultGitConfig,
-  defaultRaiseVerConfig,
-  RELEASE_MAJOR,
-  RELEASE_MINOR,
-  RELEASE_PATCH,
-  releases
 };

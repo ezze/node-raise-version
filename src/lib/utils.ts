@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 
-async function fileExists(filePath: string): Promise<boolean> {
+export async function fileExists(filePath: string): Promise<boolean> {
   try {
     return (await fs.stat(filePath)).isFile();
   }
@@ -8,7 +8,3 @@ async function fileExists(filePath: string): Promise<boolean> {
     return false;
   }
 }
-
-export {
-  fileExists
-};

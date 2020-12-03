@@ -5,7 +5,7 @@ import semver, { ReleaseType } from 'semver';
 import { releases } from './constants';
 import { fileExists } from './utils';
 
-async function findPackageJson(workingDirectoryPath = process.cwd()): Promise<string | null> {
+export async function findPackageJson(workingDirectoryPath = process.cwd()): Promise<string | null> {
   const packageJsonPath = path.resolve(workingDirectoryPath, 'package.json');
   if (await fileExists(packageJsonPath)) {
     return packageJsonPath;
@@ -18,12 +18,12 @@ async function findPackageJson(workingDirectoryPath = process.cwd()): Promise<st
   return findPackageJson(pathParts.join(path.sep));
 }
 
-async function getPackageJsonVersion(packageJsonPath: string): Promise<string> {
+export async function getPackageJsonVersion(packageJsonPath: string): Promise<string> {
   const packageJson = await fs.readJson(packageJsonPath);
   return packageJson.version;
 }
 
-async function updatePackageJsonVersion(packageJsonPath: string, release: string, options: {
+export async function updatePackageJsonVersion(packageJsonPath: string, release: string, options: {
   write?: boolean;
 } = {}): Promise<{
   version: string;
@@ -71,9 +71,3 @@ async function updatePackageJsonVersion(packageJsonPath: string, release: string
   console.log(`Version in "${packageJsonPath}" is updated.`);
   return { version, legacyVersion };
 }
-
-export {
-  findPackageJson,
-  getPackageJsonVersion,
-  updatePackageJsonVersion
-};
