@@ -1,14 +1,7 @@
 {
+  "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "rootDir": "./src",
-    "outDir": "",
-    "declaration": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  },
-  "include": ["./src/**/*"]
+    "rootDir": ".",
+    "outDir": "test/out"
+  }
 }

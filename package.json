@@ -11,12 +11,14 @@
   "typings": "lib/raiseVersion.d.ts",
   "scripts": {
     "prepublishOnly": "npm run lint && npm run build",
-    "build": "npm run clean && tsc && chmod +x bin/raiseVersion.js",
-    "watch": "npm run clean && tsc --watch",
-    "lint": "eslint src",
+    "build": "npm run clean && tsc -p tsconfig.build.json && chmod +x bin/raiseVersion.js",
+    "watch": "npm run clean && tsc -p tsconfig.build.json --watch",
     "clean": "rimraf bin dist",
     "raise": "src/bin/raiseVersion.ts",
-    "test": "jest --config jest.config.ts"
+    "test": "jest --config jest.config.ts",
+    "test:coverage": "jest --config jest.coverage.config.ts",
+    "lint": "eslint src",
+    "lint:test": "eslint test"
   },
   "repository": {
     "type": "git",
