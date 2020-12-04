@@ -18,7 +18,29 @@ jobs:
           paths:
             - ~/.cache/yarn
 
+  lint:
+    docker:
+      - image: node:14
+    steps:
+      - run:
+          name: Lint source code
+          command: yarn lint
+
+  test:
+    docker:
+      - image: node:14
+    steps:
+      - run:
+          name: Test
+          command: yarn test:coverage
+
 workflows:
   test:
     jobs:
       - install
+      - lint:
+          requires:
+            - install
+      - test:
+          requires:
+            - install
