@@ -1,6 +1,7 @@
 # node-raise-version
 
 [![NPM version](https://img.shields.io/npm/v/raise-version.svg)](https://www.npmjs.com/package/raise-version)
+[![CircleCI](https://circleci.com/gh/ezze/node-raise-version.svg?style=shield)](https://circleci.com/gh/circleci/circleci-docs)
 [![codecov](https://codecov.io/gh/ezze/node-raise-version/branch/develop/graph/badge.svg?token=I0ZRW8OP7L)](https://codecov.io/gh/ezze/node-raise-version)
 [![Downloads/month](https://img.shields.io/npm/dm/raise-version.svg)](https://www.npmjs.com/package/raise-version)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE.md)

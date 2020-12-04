@@ -57,7 +57,7 @@ jobs:
           file: coverage/coverage-final.json
 
 workflows:
-  test:
+  main:
     jobs:
       - install
       - lint:

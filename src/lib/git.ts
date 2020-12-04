@@ -5,7 +5,7 @@ declare interface UpdateGitRepositoryVersionOptions extends GitOptions {
   changeLogPath: string | null;
 }
 
-export async function updateGitRepositoryVersion(version: string, options: UpdateGitRepositoryVersionOptions): Promise<void> {
+async function updateGitRepositoryVersion(version: string, options: UpdateGitRepositoryVersionOptions): Promise<void> {
   console.log('Updating git repository...');
 
   const {
@@ -213,3 +213,7 @@ async function gitPush(remote: string, entity: string) {
 function escapeWhitespaces(message: string) {
   return message.replace(/ /g, '\\ ');
 }
+
+export {
+  updateGitRepositoryVersion
+};
