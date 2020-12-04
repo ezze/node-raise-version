@@ -17,11 +17,17 @@ jobs:
           key: yarn-packages-{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/yarn
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - project
 
   lint:
     docker:
       - image: node:14
     steps:
+      - attach_workspace:
+          at: /home/circleci
       - run:
           name: Lint source code
           command: yarn lint
@@ -30,6 +36,8 @@ jobs:
     docker:
       - image: node:14
     steps:
+      - attach_workspace:
+          at: /home/circleci
       - run:
           name: Test
           command: yarn test:coverage
