@@ -20,14 +20,14 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - node_modules
+            - *
 
   lint:
     docker:
       - image: node:14
     steps:
       - attach_workspace:
-          at: /home/circleci
+          at: .
       - run:
           name: Lint source code
           command: yarn lint
