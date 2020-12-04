@@ -53,8 +53,6 @@ jobs:
       - run:
           name: Test
           command: yarn test:coverage
-      - store_artifacts:
-          path: coverage
       - codecov/upload:
           file: coverage/coverage-final.json
 
