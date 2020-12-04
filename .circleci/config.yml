@@ -11,16 +11,16 @@ jobs:
               - yarn-packages-{{ checksum "yarn.lock" }}
       - run:
           name: Install dependencies
-          command: yarn install --immutable
+          command: pwd && ls -la && yarn install --immutable && ls -la
       - save_cache:
           name: Save Yarn dependencies cache
           key: yarn-packages-{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/yarn
       - persist_to_workspace:
-          root: /home/circleci
+          root: .
           paths:
-            - project
+            - node_modules
 
   lint:
     docker:
@@ -37,7 +37,7 @@ jobs:
       - image: node:14
     steps:
       - attach_workspace:
-          at: /home/circleci
+          at: .
       - run:
           name: Test
           command: yarn test:coverage
