@@ -1,6 +1,7 @@
 # Changelog
 
 - Source code is migrated to TypeScript. (https://github.com/ezze/node-raise-version/issues/7)
+- Tests are provided. (https://github.com/ezze/node-raise-version/issues/1)
 
 ## 0.3.2 (2020-11-12)
 
