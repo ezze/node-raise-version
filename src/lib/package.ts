@@ -5,22 +5,42 @@ import semver, { ReleaseType } from 'semver';
 import { releases } from './constants';
 import { fileExists } from './utils';
 
-export async function findPackageJson(workingDirectoryPath = process.cwd()): Promise<string | null> {
-  const packageJsonPath = path.resolve(workingDirectoryPath, 'package.json');
+export async function findPackageJson(
+  rootDirPath = process.cwd(),
+  workingDirPath?: string
+): Promise<string | null> {
+  if (!workingDirPath) {
+    workingDirPath = rootDirPath;
+  }
+
+  const normalizedRootDirPath = path.normalize(rootDirPath);
+  const normalizedWorkingDirPath = path.normalize(workingDirPath);
+  if (normalizedWorkingDirPath.indexOf(normalizedRootDirPath) !== 0) {
+    return Promise.reject('Working directory is outside of root directory');
+  }
+
+  const packageJsonPath = path.resolve(workingDirPath, 'package.json');
   if (await fileExists(packageJsonPath)) {
     return packageJsonPath;
   }
-  const pathParts = workingDirectoryPath.split(path.sep);
-  if (pathParts.length === 1) {
+
+  const rootDirPathParts = rootDirPath.split(path.sep);
+  const workingDirPathParts = workingDirPath.split(path.sep);
+  if (workingDirPathParts.length === 1 || workingDirPathParts.length <= rootDirPathParts.length) {
     return null;
   }
-  pathParts.pop();
-  return findPackageJson(pathParts.join(path.sep));
+  workingDirPathParts.pop();
+
+  return findPackageJson(rootDirPath, workingDirPathParts.join(path.sep));
 }
 
 export async function getPackageJsonVersion(packageJsonPath: string): Promise<string> {
-  const packageJson = await fs.readJson(packageJsonPath);
-  return packageJson.version;
+  try {
+    return (await fs.readJson(packageJsonPath)).version;
+  }
+  catch (e) {
+    return Promise.reject('Unable to read version from package.json');
+  }
 }
 
 export async function updatePackageJsonVersion(packageJsonPath: string, release: string, options: {
@@ -32,8 +52,14 @@ export async function updatePackageJsonVersion(packageJsonPath: string, release:
   const { write = true } = options;
 
   console.log(`Updating "${packageJsonPath}"...`);
+  let packageJson;
+  try {
+    packageJson = await fs.readJson(packageJsonPath);
+  }
+  catch (e) {
+    return Promise.reject('Unable to read package.json');
+  }
 
-  const packageJson = await fs.readJson(packageJsonPath);
   const { version: legacyVersion } = packageJson;
   if (!semver.valid(legacyVersion)) {
     return Promise.reject('Version property is not specified or invalid');
