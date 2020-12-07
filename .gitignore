@@ -2,6 +2,8 @@
 bin
 coverage
 lib
+!src/bin
+!src/lib
 !test/bin
 !test/lib
 test/out
