@@ -1,6 +1,5 @@
 import path from 'path';
 import fs from 'fs-extra';
-import camelcase from 'camelcase';
 
 import { raiseVerRcName, defaultRaiseVerConfig } from './constants';
 import { findPackageJson } from './package';
@@ -29,7 +28,6 @@ export async function writeRaiseVerRc(raiseVerRcPath: string, config: RaiseVersi
 }
 
 export async function flattenRaiseVerRc(raiseVerRcPath: string): Promise<RaiseVersionOptions> {
-  const result: Record<string, any> = {};
   let config: RaiseVersionConfig;
   if (await fileExists(raiseVerRcPath)) {
     config = await readRaiseVerRc(raiseVerRcPath);
@@ -37,19 +35,21 @@ export async function flattenRaiseVerRc(raiseVerRcPath: string): Promise<RaiseVe
   else {
     config = defaultRaiseVerConfig;
   }
-  const keys = Object.keys(config);
-  keys.forEach(key => {
-    const options = (config as any)[key] || {};
-    const names = Object.keys(options);
-    names.forEach(name => {
-      const value = options[name];
-      if (name === 'enabled') {
-        result[key] = value;
-      }
-      else {
-        result[`${key}${camelcase(name, { pascalCase: true })}`] = value;
-      }
-    });
-  });
-  return result as RaiseVersionOptions;
+  const { changelog, git } = config;
+  return {
+    changelog: changelog.enabled,
+    changelogPath: changelog.path,
+    changelogEncoding: changelog.encoding,
+    changelogPrefix: changelog.prefix,
+    changelogBullet: changelog.bullet,
+    git: git.enabled,
+    gitRelease: git.release,
+    gitDevelopment: git.development,
+    gitRemote: git.remote,
+    gitCommit: git.commit,
+    gitMerge: git.merge,
+    gitAll: git.all,
+    gitTag: git.tag,
+    gitPush: git.push
+  };
 }

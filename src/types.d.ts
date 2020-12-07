@@ -46,7 +46,7 @@ declare interface GitArgs {
 
 declare interface RaiseVersionConfig {
   changelog: ChangelogConfig;
-  git: GitOptions;
+  git: GitConfig;
 }
 
 declare interface RaiseVersionOptions extends ChangelogArgs, GitArgs {

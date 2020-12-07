@@ -1,11 +1,11 @@
 .idea
 bin
-coverage
 lib
 !src/bin
 !src/lib
 !test/bin
 !test/lib
 test/out
+coverage
 node_modules
 *.log
