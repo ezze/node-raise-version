@@ -6,12 +6,26 @@ import { raiseVerRcName, defaultRaiseVerConfig } from './constants';
 import { findPackageJson } from './package';
 import { fileExists } from './utils';
 
-export async function detectRaiseVerRcPath(workingDirectory: string = process.cwd()): Promise<string> {
-  const packageJsonPath = await findPackageJson(workingDirectory);
+export async function detectRaiseVerRcPath(workingDirPath: string = process.cwd()): Promise<string> {
+  const packageJsonPath = await findPackageJson(workingDirPath);
   if (!packageJsonPath) {
-    return Promise.reject('Unable to locate "package.json" file.');
+    return Promise.reject('Unable to locate package.json file.');
   }
   return path.resolve(path.dirname(packageJsonPath), raiseVerRcName);
+}
+
+export async function readRaiseVerRc(raiseVerRcPath: string): Promise<any> {
+  if (!await fileExists(raiseVerRcPath)) {
+    return Promise.reject(`File "${raiseVerRcPath}" doesn't exist.`);
+  }
+  return fs.readJson(raiseVerRcPath);
+}
+
+export async function writeRaiseVerRc(raiseVerRcPath: string, config: RaiseVersionConfig): Promise<void> {
+  if (await fileExists(raiseVerRcPath)) {
+    await fs.remove(raiseVerRcPath);
+  }
+  return fs.writeJson(raiseVerRcPath, config, { spaces: 2 });
 }
 
 export async function flattenRaiseVerRc(raiseVerRcPath: string): Promise<RaiseVersionOptions> {
@@ -38,18 +52,4 @@ export async function flattenRaiseVerRc(raiseVerRcPath: string): Promise<RaiseVe
     });
   });
   return result as RaiseVersionOptions;
-}
-
-export async function readRaiseVerRc(raiseVerRcPath: string): Promise<any> {
-  if (!await fileExists(raiseVerRcPath)) {
-    return Promise.reject(`File "${raiseVerRcPath}" doesn't exist.`);
-  }
-  return fs.readJson(raiseVerRcPath);
-}
-
-export async function writeRaiseVerRc(raiseVerRcPath: string, config: RaiseVersionConfig): Promise<void> {
-  if (await fileExists(raiseVerRcPath)) {
-    await fs.remove(raiseVerRcPath);
-  }
-  return fs.writeJson(raiseVerRcPath, config, { spaces: 2 });
 }
