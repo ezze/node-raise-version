@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 
-import { rootTestOutPath } from './helpers';
+import { rootTestOutDirPath } from './helpers';
 
 beforeAll(async() => {
-  await fs.emptyDir(rootTestOutPath);
+  await fs.emptyDir(rootTestOutDirPath);
 });

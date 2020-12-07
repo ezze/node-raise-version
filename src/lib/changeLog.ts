@@ -9,7 +9,7 @@ export async function readChangeLog(filePath: string, options: {
 } = {}): Promise<string[]> {
   const { encoding = 'utf-8' } = options;
   if (!await fileExists(filePath)) {
-    return Promise.reject(`Changelog file "${filePath}" doesn't exist.`);
+    return Promise.reject('Changelog file doesn\'t exist');
   }
   return (await fs.readFile(filePath, { encoding })).split('\n');
 }
@@ -23,11 +23,12 @@ export async function updateChangeLogVersion(changeLogPath: string, version: str
 
   const { prefix = '##', bullet = '-' } = options;
   const versionRegExp = new RegExp(`^${prefix} (\\d+\\.\\d+\\.\\d+)`);
-  const bulletRegExp = new RegExp(`^${bullet} .+$`);
+  const bulletRegExp = new RegExp(`^${bullet.replace(/\*/g, '\\*')}.+$`);
+  console.log(bulletRegExp);
 
   const newChangeLog = !await fileExists(changeLogPath);
   if (newChangeLog) {
-    console.warn('Changelog file doesn\'t exist, let\'s try to create it.');
+    console.warn('Changelog file doesn\'t exist, let\'s try to create it');
   }
 
   const lines = !newChangeLog ? await readChangeLog(changeLogPath, options) : [];
@@ -45,18 +46,18 @@ export async function updateChangeLogVersion(changeLogPath: string, version: str
   }
 
   if (versionLineIndex < 0) {
-    const message = 'There is no previous version\'s header in changelog file.';
+    const message = 'There is no previous version\'s header in changeLog file';
     console.warn(message);
     versionLineIndex = lines.length;
   }
 
   if (previousVersion) {
     if (semver.eq(version, previousVersion)) {
-      console.warn(`Changes for version ${version} are already in changelog, skipping update.`);
+      console.warn(`Changes for version ${version} are already in changelog, skipping update`);
       return;
     }
     if (!semver.gt(version, previousVersion)) {
-      const message = `Previous version ${previousVersion} in changelog file is not less then the new one ${version}.`;
+      const message = `Previous version ${previousVersion} in changelog file is not less then the new one ${version}`;
       return Promise.reject(message);
     }
   }
@@ -72,11 +73,11 @@ export async function updateChangeLogVersion(changeLogPath: string, version: str
     }
   }
   if (bulletStartIndex < 0) {
-    const message = `There is no change list for new version ${version} with bullets "${bullet}".`;
+    const message = `There is no change list for new version ${version} with bullets "${bullet}"`;
     if (!newChangeLog) {
       return Promise.reject(message);
     }
-    lines.push('- Initial release.', '');
+    lines.push(`${bullet} Initial release.`, '');
     bulletStartIndex = 0;
   }
 

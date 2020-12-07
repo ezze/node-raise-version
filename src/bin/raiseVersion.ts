@@ -41,31 +41,31 @@ import { detectRaiseVerRcPath, flattenRaiseVerRc } from '../lib/config';
         })
         .option('changelog', {
           alias: 'l',
-          describe: 'Update version in changelog file',
+          describe: 'Update version in changeLog file',
           type: 'boolean',
           default: changelog
         })
-        .option('changelog-path', {
+        .option('changeLog-path', {
           alias: 'f',
-          describe: 'Path to changelog file',
+          describe: 'Path to changeLog file',
           type: 'string',
           default: changelogPath
         })
-        .option('changelog-encoding', {
+        .option('changeLog-encoding', {
           alias: 'e',
-          describe: 'Encoding of changelog file',
+          describe: 'Encoding of changeLog file',
           type: 'string',
           default: changelogEncoding
         })
-        .option('changelog-prefix', {
+        .option('changeLog-prefix', {
           alias: 'h',
-          describe: 'Prefix for version header in changelog file',
+          describe: 'Prefix for version header in changeLog file',
           type: 'string',
           default: changelogPrefix
         })
-        .option('changelog-bullet', {
+        .option('changeLog-bullet', {
           alias: 'b',
-          describe: 'Bullet character for changes\' item in changelog file',
+          describe: 'Bullet character for changes\' item in changeLog file',
           type: 'string',
           default: changelogBullet
         })

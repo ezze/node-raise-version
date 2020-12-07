@@ -54,7 +54,7 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
 
       const diffCachedLines = await gitDiffCached();
       if (diffCachedLines.length === 0) {
-        return Promise.reject('There is nothing to commit.');
+        return Promise.reject('There is nothing to commit');
       }
 
       if (gitflow) {

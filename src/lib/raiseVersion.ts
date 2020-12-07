@@ -50,7 +50,7 @@ export default async function raiseVersion(options: RaiseVersionOptions): Promis
     return Promise.reject('Release is not specified');
   }
 
-  // Updating changelog
+  // Updating changeLog
   if (changelog) {
     try {
       await updateChangeLogVersion(changelogPath, version, {
@@ -60,7 +60,7 @@ export default async function raiseVersion(options: RaiseVersionOptions): Promis
       });
     }
     catch (e) {
-      console.error('Unable to update changelog, reverting changes back...');
+      console.error('Unable to update changeLog, reverting changes back...');
       await updatePackageJsonVersion(packageJsonPath, legacyVersion);
       throw e;
     }
