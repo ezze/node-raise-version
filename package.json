@@ -11,8 +11,8 @@
   "typings": "lib/raiseVersion.d.ts",
   "scripts": {
     "prepublishOnly": "npm run lint && npm run build",
-    "build": "npm run clean && tsc -p src/tsconfig.json && chmod +x bin/raiseVersion.js",
-    "watch": "npm run clean && tsc -p src/tsconfig.json --watch",
+    "build": "npm run clean && tsc -p tsconfig.json && chmod +x bin/raiseVersion.js",
+    "watch": "npm run clean && tsc -p tsconfig.json --watch",
     "clean": "rimraf bin lib",
     "raise": "src/bin/raiseVersion.ts",
     "test": "jest --config jest.config.ts",

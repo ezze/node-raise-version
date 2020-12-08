@@ -1,9 +1,12 @@
 {
-  "extends": "../src/tsconfig.json",
   "compilerOptions": {
-    "rootDir": ".",
+    "rootDir": "..",
     "outDir": "out",
-    "declaration": false
+    "declaration": false,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["../types/*.d.ts", "**/*", "../src/**/*"],
   "exclude": []
