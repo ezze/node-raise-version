@@ -1,7 +1,12 @@
 {
-  "extends": "./tsconfig.build.json",
+  "extends": "tsconfig.build.json",
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "test/out"
-  }
+    "outDir": "test/out",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*", "test/**/*", "*.d.ts"]
 }
