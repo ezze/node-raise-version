@@ -5,18 +5,6 @@ declare interface ChangelogOptions {
   bullet: string;
 }
 
-declare interface ChangelogConfig extends ChangelogOptions {
-  enabled: boolean;
-}
-
-declare interface ChangelogArgs {
-  changelog: boolean;
-  changelogPath: string;
-  changelogEncoding: string;
-  changelogPrefix: string;
-  changelogBullet: string;
-}
-
 declare interface GitOptions {
   release: string;
   development: string;
@@ -28,8 +16,27 @@ declare interface GitOptions {
   push: boolean;
 }
 
+declare interface ChangelogConfig extends ChangelogOptions {
+  enabled: boolean;
+}
+
 declare interface GitConfig extends GitOptions {
   enabled: boolean;
+}
+
+declare interface RaiseVersionConfig {
+  skipUpdate?: boolean;
+  release?: string;
+  changelog: ChangelogConfig;
+  git: GitConfig;
+}
+
+declare interface ChangelogArgs {
+  changelog: boolean;
+  changelogPath: string;
+  changelogEncoding: string;
+  changelogPrefix: string;
+  changelogBullet: string;
 }
 
 declare interface GitArgs {
@@ -44,12 +51,7 @@ declare interface GitArgs {
   gitPush: boolean;
 }
 
-declare interface RaiseVersionConfig {
-  changelog: ChangelogConfig;
-  git: GitConfig;
-}
-
-declare interface RaiseVersionOptions extends ChangelogArgs, GitArgs {
+declare interface RaiseVersionArgs extends ChangelogArgs, GitArgs {
   skipUpdate?: boolean;
   release?: string;
 }

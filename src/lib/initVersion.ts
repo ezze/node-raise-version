@@ -1,16 +1,20 @@
 import { defaultRaiseVerConfig } from './constants';
-import { detectRaiseVerRcPath, writeRaiseVerRc } from './config';
+import { detectRaiseVerRcPath, readRaiseVerRc, writeRaiseVerRc } from './config';
 import { fileExists } from './utils';
 
 export async function initVersion(): Promise<RaiseVersionConfig> {
   const raiseVerRcPath = await detectRaiseVerRcPath();
-  if (await fileExists(raiseVerRcPath)) {
+  if (raiseVerRcPath && await fileExists(raiseVerRcPath)) {
     console.warn(`File "${raiseVerRcPath}" already exists.`);
+    return readRaiseVerRc(raiseVerRcPath);
+  }
+  else if (raiseVerRcPath) {
+    await writeRaiseVerRc(raiseVerRcPath, defaultRaiseVerConfig);
+    return defaultRaiseVerConfig;
   }
   else {
-    await writeRaiseVerRc(raiseVerRcPath, defaultRaiseVerConfig);
+    return Promise.reject('Unable to detect a path to .raiseverrc');
   }
-  return defaultRaiseVerConfig;
 }
 
 export default initVersion;

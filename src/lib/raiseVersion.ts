@@ -1,39 +1,19 @@
 import { releases } from './constants';
-import { detectRaiseVerRcPath, flattenRaiseVerRc } from './config';
+import { getRaiseVerRcConfig } from './config';
 import { findPackageJson, getPackageJsonVersion, updatePackageJsonVersion } from './package';
 import { updateChangeLogVersion } from './changeLog';
 import { updateGitRepositoryVersion } from './git';
 
-export default async function raiseVersion(options: RaiseVersionOptions): Promise<string> {
+export default async function raiseVersion(config: RaiseVersionConfig): Promise<string> {
   const packageJsonPath = await findPackageJson();
   if (!packageJsonPath) {
     return Promise.reject('Unable to locate "package.json" file');
   }
 
-  const raiseVerRcPath = await detectRaiseVerRcPath();
-  const rcOptions = await flattenRaiseVerRc(raiseVerRcPath);
-
-  const {
-    skipUpdate,
-    release,
-    changelog,
-    changelogPath,
-    changelogEncoding,
-    changelogPrefix,
-    changelogBullet,
-    git,
-    gitRelease,
-    gitDevelopment,
-    gitRemote,
-    gitCommit,
-    gitMerge,
-    gitAll,
-    gitTag,
-    gitPush
-  } = {
-    ...rcOptions,
-    ...options
-  };
+  const rcConfig = await getRaiseVerRcConfig();
+  const { skipUpdate, release } = { ...rcConfig, ...config };
+  const changelog = { ...rcConfig.changelog, ...config.changelog };
+  const git = { ...rcConfig.git, ...config.git };
 
   // Updating package.json
   let version, legacyVersion;
@@ -50,17 +30,14 @@ export default async function raiseVersion(options: RaiseVersionOptions): Promis
     return Promise.reject('Release is not specified');
   }
 
-  // Updating changeLog
-  if (changelog) {
+  // Updating changelog
+  if (changelog.enabled) {
+    const { path, encoding, prefix, bullet } = changelog;
     try {
-      await updateChangeLogVersion(changelogPath, version, {
-        encoding: changelogEncoding,
-        prefix: changelogPrefix,
-        bullet: changelogBullet
-      });
+      await updateChangeLogVersion(path, version, { encoding, prefix, bullet });
     }
     catch (e) {
-      console.error('Unable to update changeLog, reverting changes back...');
+      console.error('Unable to update changelog, reverting changes back...');
       await updatePackageJsonVersion(packageJsonPath, legacyVersion);
       throw e;
     }
@@ -68,17 +45,18 @@ export default async function raiseVersion(options: RaiseVersionOptions): Promis
 
   // Updating git repository
   if (git) {
+    const { path: changeLogPath } = changelog;
     await updateGitRepositoryVersion(version, {
       packageJsonPath,
-      changeLogPath: changelog ? changelogPath : null,
-      release: gitRelease,
-      development: gitDevelopment,
-      remote: gitRemote,
-      commit: gitCommit,
-      merge: gitMerge,
-      all: gitAll,
-      tag: gitTag,
-      push: gitPush
+      changeLogPath: changeLogPath ? changeLogPath : null,
+      release: git.release,
+      development: git.development,
+      remote: git.remote,
+      commit: git.commit,
+      merge: git.merge,
+      all: git.all,
+      tag: git.tag,
+      push: git.push
     });
   }
 

@@ -46,7 +46,7 @@ export async function updateChangeLogVersion(changeLogPath: string, version: str
   }
 
   if (versionLineIndex < 0) {
-    const message = 'There is no previous version\'s header in changeLog file';
+    const message = 'There is no previous version\'s header in changelog file';
     console.warn(message);
     versionLineIndex = lines.length;
   }

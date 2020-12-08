@@ -5,17 +5,25 @@ import { raiseVerRcName, defaultRaiseVerConfig } from './constants';
 import { findPackageJson } from './package';
 import { fileExists } from './utils';
 
-export async function detectRaiseVerRcPath(workingDirPath: string = process.cwd()): Promise<string> {
+export async function detectRaiseVerRcPath(workingDirPath: string = process.cwd()): Promise<string | null> {
   const packageJsonPath = await findPackageJson(workingDirPath);
   if (!packageJsonPath) {
-    return Promise.reject('Unable to locate package.json file.');
+    return null;
   }
   return path.resolve(path.dirname(packageJsonPath), raiseVerRcName);
 }
 
+export async function getRaiseVerRcConfig(workingDirPath?: string): Promise<RaiseVersionConfig> {
+  const raiseVerRcPath = await detectRaiseVerRcPath(workingDirPath);
+  if (raiseVerRcPath && await fileExists(raiseVerRcPath)) {
+    return readRaiseVerRc(raiseVerRcPath);
+  }
+  return defaultRaiseVerConfig;
+}
+
 export async function readRaiseVerRc(raiseVerRcPath: string): Promise<any> {
   if (!await fileExists(raiseVerRcPath)) {
-    return Promise.reject(`File "${raiseVerRcPath}" doesn't exist.`);
+    return Promise.reject(`File "${raiseVerRcPath}" doesn't exist`);
   }
   return fs.readJson(raiseVerRcPath);
 }
@@ -27,29 +35,46 @@ export async function writeRaiseVerRc(raiseVerRcPath: string, config: RaiseVersi
   return fs.writeJson(raiseVerRcPath, config, { spaces: 2 });
 }
 
-export async function flattenRaiseVerRc(raiseVerRcPath: string): Promise<RaiseVersionOptions> {
-  let config: RaiseVersionConfig;
-  if (await fileExists(raiseVerRcPath)) {
-    config = await readRaiseVerRc(raiseVerRcPath);
-  }
-  else {
-    config = defaultRaiseVerConfig;
-  }
-  const { changelog, git } = config;
+export async function convertArgsToConfig(args: RaiseVersionArgs): Promise<RaiseVersionConfig> {
+  const {
+    skipUpdate,
+    release,
+    changelog,
+    changelogPath,
+    changelogEncoding,
+    changelogPrefix,
+    changelogBullet,
+    git,
+    gitRelease,
+    gitDevelopment,
+    gitRemote,
+    gitCommit,
+    gitMerge,
+    gitAll,
+    gitTag,
+    gitPush
+  } = args;
+
   return {
-    changelog: changelog.enabled,
-    changelogPath: changelog.path,
-    changelogEncoding: changelog.encoding,
-    changelogPrefix: changelog.prefix,
-    changelogBullet: changelog.bullet,
-    git: git.enabled,
-    gitRelease: git.release,
-    gitDevelopment: git.development,
-    gitRemote: git.remote,
-    gitCommit: git.commit,
-    gitMerge: git.merge,
-    gitAll: git.all,
-    gitTag: git.tag,
-    gitPush: git.push
+    skipUpdate,
+    release,
+    changelog: {
+      enabled: changelog,
+      path: changelogPath,
+      encoding: changelogEncoding,
+      prefix: changelogPrefix,
+      bullet: changelogBullet
+    },
+    git: {
+      enabled: git,
+      release: gitRelease,
+      development: gitDevelopment,
+      remote: gitRemote,
+      commit: gitCommit,
+      merge: gitMerge,
+      all: gitAll,
+      tag: gitTag,
+      push: gitPush
+    }
   };
 }
