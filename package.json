@@ -1,7 +1,7 @@
 {
   "name": "raise-version",
   "version": "0.3.2",
-  "description": "Update and publish package version for Gitflow worflow",
+  "description": "Update and commit package version for Gitflow workflow",
   "main": "lib/raiseVersion.js",
   "bin": {
     "raisever": "bin/raiseVersion.js",
