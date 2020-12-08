@@ -10,7 +10,8 @@ import {
 import {
   createTestOutDir,
   createDir,
-  createRestoreInitialWorkingDir
+  createRestoreInitialWorkingDir,
+  createPackageJson
 } from '../helpers';
 
 describe('package', () => {
@@ -24,13 +25,7 @@ describe('package', () => {
     [version]: version
   };
 
-  const packageJsonContents = { name: 'test-package', version };
-
-  const createPackageJson = async(dirPath: string, contents: any): Promise<string> => {
-    const packageJsonPath = path.resolve(dirPath, 'package.json');
-    await fs.writeJSON(packageJsonPath, contents, { encoding: 'utf-8', spaces: 2 });
-    return packageJsonPath;
-  };
+  const packageJsonContents = { name: 'test-package', description: 'Test package', version };
 
   const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
   afterEach(() => restoreInitialWorkingDir());

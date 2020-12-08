@@ -13,14 +13,6 @@ export async function detectRaiseVerRcPath(workingDirPath: string = process.cwd(
   return path.resolve(path.dirname(packageJsonPath), raiseVerRcName);
 }
 
-export async function getRaiseVerRcConfig(workingDirPath?: string): Promise<RaiseVersionConfig> {
-  const raiseVerRcPath = await detectRaiseVerRcPath(workingDirPath);
-  if (raiseVerRcPath && await fileExists(raiseVerRcPath)) {
-    return readRaiseVerRc(raiseVerRcPath);
-  }
-  return defaultRaiseVerConfig;
-}
-
 export async function readRaiseVerRc(raiseVerRcPath: string): Promise<any> {
   if (!await fileExists(raiseVerRcPath)) {
     return Promise.reject(`File "${raiseVerRcPath}" doesn't exist`);
@@ -33,6 +25,14 @@ export async function writeRaiseVerRc(raiseVerRcPath: string, config: RaiseVersi
     await fs.remove(raiseVerRcPath);
   }
   return fs.writeJson(raiseVerRcPath, config, { spaces: 2 });
+}
+
+export async function getRaiseVerRcConfig(workingDirPath?: string): Promise<RaiseVersionConfig> {
+  const raiseVerRcPath = await detectRaiseVerRcPath(workingDirPath);
+  if (raiseVerRcPath && await fileExists(raiseVerRcPath)) {
+    return readRaiseVerRc(raiseVerRcPath);
+  }
+  return defaultRaiseVerConfig;
 }
 
 export async function convertArgsToConfig(args: RaiseVersionArgs): Promise<RaiseVersionConfig> {

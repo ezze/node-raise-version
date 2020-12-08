@@ -66,6 +66,18 @@ export async function copyFixtureFile(
   return destFilePath;
 }
 
+export async function createPackageJson(dirPath: string, contents: { [key: string]: any }): Promise<string> {
+  const packageJsonPath = path.resolve(dirPath, 'package.json');
+  await fs.writeJSON(packageJsonPath, contents, { encoding: 'utf-8', spaces: 2 });
+  return packageJsonPath;
+}
+
+export async function createRaiseVerRc(dirPath: string, contents: RaiseVersionConfig): Promise<string> {
+  const raiseVerRcPath = path.resolve(dirPath, '.raiseverrc');
+  await fs.writeJSON(raiseVerRcPath, contents, { encoding: 'utf-8', spaces: 2 });
+  return raiseVerRcPath;
+}
+
 export async function exec(command: string): Promise<void> {
   try {
     await execa.command(command);
