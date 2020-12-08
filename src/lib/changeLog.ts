@@ -24,7 +24,6 @@ export async function updateChangeLogVersion(changeLogPath: string, version: str
   const { prefix = '##', bullet = '-' } = options;
   const versionRegExp = new RegExp(`^${prefix} (\\d+\\.\\d+\\.\\d+)`);
   const bulletRegExp = new RegExp(`^${bullet.replace(/\*/g, '\\*')}.+$`);
-  console.log(bulletRegExp);
 
   const newChangeLog = !await fileExists(changeLogPath);
   if (newChangeLog) {

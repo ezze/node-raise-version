@@ -17,7 +17,7 @@
     "raise": "src/bin/raiseVersion.ts",
     "test": "jest --config jest.config.ts",
     "test:coverage": "rimraf coverage && jest --config jest.coverage.config.ts",
-    "test:ci": "rimraf coverage && cross-env JEST_JUNIT_OUTPUT_DIR=reports/junit jest --config jest.coverage.config.ts --ci --reporters=default --reporters=jest-junit",
+    "test:ci": "rimraf coverage reports && cross-env JEST_JUNIT_OUTPUT_DIR=reports/junit jest --config jest.coverage.config.ts --ci --reporters=default --reporters=jest-junit",
     "lint": "eslint src",
     "lint:test": "eslint test"
   },
