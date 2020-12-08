@@ -1,12 +1,15 @@
 {
-  "extends": "tsconfig.build.json",
   "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
     "rootDir": ".",
-    "outDir": "test/out",
+    "outDir": "..",
+    "declaration": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "test/**/*", "*.d.ts"]
+  "include": ["../types/*.d.ts", "**/*"],
+  "exclude": []
 }
