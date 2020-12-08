@@ -8,4 +8,5 @@ lib
 test/out
 coverage
 node_modules
+reports
 *.log

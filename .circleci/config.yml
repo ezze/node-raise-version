@@ -52,14 +52,14 @@ jobs:
           at: .
       - run:
           name: Test
-          command: yarn test:coverage
+          command: yarn test:ci
       - codecov/upload:
           file: coverage/coverage-final.json
       - store_artifacts:
-          path: coverage
-      - store_artifacts:
           path: test/out
           destination: test-output
+      - store_test_results:
+          path: reports/junit
 
 workflows:
   main:

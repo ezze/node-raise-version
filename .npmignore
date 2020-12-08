@@ -5,6 +5,7 @@
 .raiseverrc
 *.log
 coverage
+reports
 src
 test
 jest.*.ts
