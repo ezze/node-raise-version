@@ -1,3 +1,4 @@
+.circleci
 .eslintrc
 .idea
 .gitgnore
@@ -5,8 +6,6 @@
 *.log
 coverage
 src
-jest.config.ts
-jest.coverage.config.ts
 test
-tsconfig.json
-tsconfig.build.json
+jest.*.ts
+yarn*
