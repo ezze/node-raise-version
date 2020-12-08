@@ -55,6 +55,11 @@ jobs:
           command: yarn test:coverage
       - codecov/upload:
           file: coverage/coverage-final.json
+      - store_artifacts:
+          path: coverage
+      - store_artifacts:
+          path: test/out
+          destination: test-output
 
 workflows:
   main:
