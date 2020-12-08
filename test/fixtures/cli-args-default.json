@@ -1,0 +1,16 @@
+{
+  "changelog": true,
+  "changelogPath": "CHANGELOG.md",
+  "changelogEncoding": "utf-8",
+  "changelogPrefix": "##",
+  "changelogBullet": "-",
+  "git": true,
+  "gitRelease": "master",
+  "gitDevelopment": "develop",
+  "gitRemote": "origin",
+  "gitCommit": true,
+  "gitMerge": true,
+  "gitAll": false,
+  "gitTag": true,
+  "gitPush": false
+}

@@ -49,7 +49,7 @@ export async function loadTextFile(filePath: string, tokens?: Record<string, str
       contents = contents.replace(new RegExp(`\\{\\{${name}\\}\\}`, 'gm'), value);
     });
   }
-  if (path.extname(filePath) === '.json') {
+  if (path.extname(filePath) === '.json' || path.basename(filePath) === '.raiseverrc') {
     return JSON.parse(contents);
   }
   return contents.split('\n');
