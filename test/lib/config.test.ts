@@ -11,7 +11,7 @@ import {
 import {
   createRestoreInitialWorkingDir,
   createTestOutDir,
-  createPackageJson,
+  createPackageJsonFile,
   createRaiseVerRc,
   loadFixtureFile,
   loadTextFile
@@ -38,7 +38,7 @@ describe('config', () => {
   describe('detectRaiseVerRcPath', () => {
     it('get path to .raiseverrc file', async() => {
       const outDirPath = await createTestOutDir('detect-rc-path', true);
-      await createPackageJson(outDirPath, packageJsonContents);
+      await createPackageJsonFile(outDirPath, packageJsonContents);
       const raiseVerRcPath = await createRaiseVerRc(outDirPath, defaultRaiseVerConfig);
       expect(await detectRaiseVerRcPath()).toBe(raiseVerRcPath);
     });
@@ -83,14 +83,14 @@ describe('config', () => {
   describe('getRaiseVerRcConfig', () => {
     it('get config from .raiseverrc file', async() => {
       const outDirPath = await createTestOutDir('get-config', true);
-      await createPackageJson(outDirPath, packageJsonContents);
+      await createPackageJsonFile(outDirPath, packageJsonContents);
       await createRaiseVerRc(outDirPath, raiseVerConfig);
       expect(await getRaiseVerRcConfig()).toEqual(raiseVerConfig);
     });
 
     it('get default configuration when .raiseverrc file doesn\'t exist', async() => {
       const outDirPath = await createTestOutDir('get-default-config', true);
-      await createPackageJson(outDirPath, packageJsonContents);
+      await createPackageJsonFile(outDirPath, packageJsonContents);
       expect(await getRaiseVerRcConfig()).toEqual(defaultRaiseVerConfig);
     });
   });

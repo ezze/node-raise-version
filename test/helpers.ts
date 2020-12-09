@@ -34,10 +34,16 @@ export function createRestoreInitialWorkingDir(): Function {
   return () => process.chdir(initialDirPath);
 }
 
-export async function createPackageJson(dirPath: string, contents: { [key: string]: any }): Promise<string> {
+export async function createPackageJsonFile(dirPath: string, contents: { [key: string]: any }): Promise<string> {
   const packageJsonPath = path.resolve(dirPath, 'package.json');
   await fs.writeJSON(packageJsonPath, contents, { encoding: 'utf-8', spaces: 2 });
   return packageJsonPath;
+}
+
+export async function createChangeLogFile(dirPath: string, contents: Array<string>,): Promise<string> {
+  const changeLogPath = path.resolve(dirPath, 'CHANGELOG.md');
+  await fs.writeFile(changeLogPath, contents.join('\n'), { encoding: 'utf-8' });
+  return changeLogPath;
 }
 
 export async function createRaiseVerRc(dirPath: string, contents: RaiseVersionConfig): Promise<string> {
@@ -60,8 +66,12 @@ export async function createRepository(dirPath: string, options?: {
   return repoDirPath;
 }
 
-export async function createBranch(repoPath: string, branchName: string): Promise<void> {
+export async function createBranch(repoPath: string, branch: string, commit?: string): Promise<void> {
+  await exec(`git checkout -b ${branch}${commit ? ` ${commit}` : ''}`, repoPath);
+}
 
+export async function checkoutBranch(repoPath: string, branch: string): Promise<void> {
+  await exec(`git checkout ${branch}`, repoPath);
 }
 
 export async function addRemoteRepository(
@@ -75,6 +85,47 @@ export async function addRemoteRepository(
 export async function commitAll(repoPath: string, message: string): Promise<void> {
   await exec('git add -A', repoPath);
   await exec(`git commit -m ${escapeWhitespaces(message)}`, repoPath);
+}
+
+export function getCommitRef(branch: string, parents?: Array<string>): string {
+  return `${branch}${parents ? parents.join('') : ''}`;
+}
+
+export async function getCommitMessage(repoPath: string, commitRef: string): Promise<string> {
+  const execaCommand = await exec(`git show-branch --no-name ${commitRef}`, repoPath);
+  return execaCommand.stdout;
+}
+
+export async function getCommitDiff(repoPath: string, commitRef1: string, commitRef2: string): Promise<Array<string>> {
+  const execaCommand = await exec(`git diff ${commitRef1} ${commitRef2}`, repoPath);
+  return execaCommand.stdout.split('\n');
+}
+
+export function extractFileDiff(diff: Array<string>, fileName: string): Array<string> {
+  const fileDiff: Array<string> = [];
+  let fileFound = false;
+  let diffStarted = false;
+  for (let i = 0; i < diff.length; i++) {
+    const line = diff[i];
+    const newDiff = line.startsWith('diff --git');
+    if (newDiff) {
+      if (fileFound) {
+        break;
+      }
+      if (line === `diff --git a/${fileName} b/${fileName}`) {
+        fileFound = true;
+      }
+    }
+    else if (fileFound) {
+      if (line.startsWith('@@')) {
+        diffStarted = true;
+      }
+      else if (diffStarted) {
+        fileDiff.push(line);
+      }
+    }
+  }
+  return fileDiff;
 }
 
 function escapeWhitespaces(message: string) {
@@ -92,15 +143,45 @@ export async function loadFixtureFile(
 export async function loadTextFile(filePath: string, tokens?: Record<string, string>): Promise<any | Array<string>> {
   let contents = await fs.readFile(filePath, { encoding: 'utf-8' });
   if (tokens) {
-    Object.entries(tokens).forEach(([name, value]) => {
-      contents = contents.replace(new RegExp(`\\{\\{${name}\\}\\}`, 'gm'), value);
-    });
+    contents = applyTokensToLine(contents, tokens, true);
   }
   if (path.extname(filePath) === '.json' || path.basename(filePath) === '.raiseverrc') {
     return JSON.parse(contents);
   }
   return contents.split('\n');
 }
+
+export function applyTokens(
+  item: string | Array<string> | Record<string, any>,
+  tokens: Record<string, string>
+): any {
+  if (typeof item === 'string') {
+    return applyTokensToLine(item, tokens);
+  }
+  if (Array.isArray(item)) {
+    return applyTokensToLines(item, tokens);
+  }
+  if (typeof item === 'object') {
+    const result: Record<string, any> = {};
+    Object.entries(item).forEach(([name, value]) => {
+      result[name] = applyTokens(value, tokens);
+    });
+    return result;
+  }
+  return item;
+}
+
+function applyTokensToLine(line: string, tokens: Record<string, string>, multiline = false): string {
+  Object.entries(tokens).forEach(([name, value]) => {
+    line = line.replace(new RegExp(`\\{\\{${name}\\}\\}`, `g${multiline ? 'm' : ''}`), value);
+  });
+  return line;
+}
+
+function applyTokensToLines(lines: Array<string>, tokens: Record<string, string>) {
+  return lines.map(line => applyTokensToLine(line, tokens));
+}
+
 
 export async function copyFixtureFile(
   relativeFilePath: string,

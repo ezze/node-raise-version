@@ -1,0 +1,59 @@
+{
+  "versions": {
+    "major": "1.0.0",
+    "minor": "0.2.0",
+    "patch": "0.1.1"
+  },
+  "packageJson": {
+    "contents": {
+      "name": "test-package",
+      "description": "Test package",
+      "version": "0.1.0"
+    },
+    "diff": [
+      " {",
+      "   \"name\": \"test-package\",",
+      "   \"description\": \"Test package\",",
+      "-  \"version\": \"0.1.0\"",
+      "+  \"version\": \"{{version}}\"",
+      " }"
+    ]
+  },
+  "changeLog": {
+    "contents": {
+      "initial": [
+        "# Changelog",
+        "",
+        "## 0.1.0 (2020-12-07)",
+        "",
+        "- Initial release.",
+        ""
+      ],
+      "altered": [
+        "# Changelog",
+        "",
+        "## {{version}} ({{date}})",
+        "",
+        "- Some changes are made.",
+        "- Another super feature is implemented.",
+        "",
+        "## 0.1.0 (2020-12-07)",
+        "",
+        "- Initial release.",
+        ""
+      ]
+    },
+    "diff": [
+      " # Changelog",
+      " ",
+      "+## {{version}} ({{date}})",
+      "+",
+      "+- Some changes are made.",
+      "+- Another super feature is implemented.",
+      "+",
+      " ## 0.1.0 (2020-12-07)",
+      " ",
+      " - Initial release."
+    ]
+  }
+}

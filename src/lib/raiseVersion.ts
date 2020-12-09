@@ -48,7 +48,7 @@ export default async function raiseVersion(config: RaiseVersionConfig): Promise<
     const { path: changeLogPath } = changelog;
     await updateGitRepositoryVersion(version, {
       packageJsonPath,
-      changeLogPath: changeLogPath ? changeLogPath : null,
+      changeLogPath,
       release: git.release,
       development: git.development,
       remote: git.remote,

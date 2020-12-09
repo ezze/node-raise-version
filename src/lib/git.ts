@@ -2,7 +2,7 @@ import execa from 'execa';
 
 declare interface UpdateGitRepositoryVersionOptions extends GitOptions {
   packageJsonPath: string;
-  changeLogPath: string | null;
+  changeLogPath?: string;
 }
 
 async function updateGitRepositoryVersion(version: string, options: UpdateGitRepositoryVersionOptions): Promise<void> {
@@ -20,10 +20,6 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
     tag = true,
     push = false
   } = options;
-
-  if (!packageJsonPath) {
-    return Promise.reject('Path to package.json is not specified.');
-  }
 
   const current = await gitCurrentBranch();
   if (current !== development) {

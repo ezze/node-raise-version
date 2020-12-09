@@ -11,7 +11,7 @@ import {
   createTestOutDir,
   createDir,
   createRestoreInitialWorkingDir,
-  createPackageJson
+  createPackageJsonFile
 } from '../helpers';
 
 describe('package', () => {
@@ -33,14 +33,14 @@ describe('package', () => {
   describe('findPackageJson', () => {
     it('find package.json in root directory', async() => {
       const outDirPath = await createTestOutDir('find-in-working', true);
-      const packageJsonPath = await createPackageJson(outDirPath, packageJsonContents);
+      const packageJsonPath = await createPackageJsonFile(outDirPath, packageJsonContents);
       expect(await findPackageJson()).toBe(packageJsonPath);
     });
 
     it('find package.json starting from nested directory', async() => {
       const outDirPath = await createTestOutDir('find-from-nested', true);
       const nestedDirPath = await createDir(path.resolve(outDirPath, 'nested'));
-      const packageJsonPath = await createPackageJson(outDirPath, packageJsonContents);
+      const packageJsonPath = await createPackageJsonFile(outDirPath, packageJsonContents);
       expect(await findPackageJson(outDirPath, nestedDirPath)).toBe(packageJsonPath);
     });
 
@@ -52,7 +52,7 @@ describe('package', () => {
     it('look for package.json outside of root directory', async() => {
       const outDirPath = await createTestOutDir('working-outside-of-root', true);
       const rootDirPath = await createDir(path.resolve(outDirPath, 'root'));
-      await createPackageJson(outDirPath, packageJsonContents);
+      await createPackageJsonFile(outDirPath, packageJsonContents);
       const errorMessage = 'Working directory is outside of root directory';
       await expect(findPackageJson(rootDirPath, outDirPath)).rejects.toBe(errorMessage);
     });
@@ -61,7 +61,7 @@ describe('package', () => {
   describe('getPackageJsonVersion', () => {
     it('get version from package.json', async() => {
       const outDirPath = await createTestOutDir('get-package-version', true);
-      const packageJsonPath = await createPackageJson(outDirPath, packageJsonContents);
+      const packageJsonPath = await createPackageJsonFile(outDirPath, packageJsonContents);
       expect(await getPackageJsonVersion(packageJsonPath)).toBe(version);
     });
 
@@ -95,7 +95,7 @@ describe('package', () => {
 
       it(`${label} version update`, async() => {
         const outDirPath = await createTestOutDir(`${release}-update`, true);
-        const packageJsonPath = await createPackageJson(outDirPath, packageJsonContents);
+        const packageJsonPath = await createPackageJsonFile(outDirPath, packageJsonContents);
         const updateResult = await updatePackageJsonVersion(packageJsonPath, release);
         checkUpdateResult(updateResult, release);
         const expectedPackageJson = { ...packageJsonContents, version: expectedVersion };
@@ -104,7 +104,7 @@ describe('package', () => {
 
       it(`${label} version update without writing to file`, async() => {
         const outDirPath = await createTestOutDir(`${release}-update-without-saving`, true);
-        const packageJsonPath = await createPackageJson(outDirPath, packageJsonContents);
+        const packageJsonPath = await createPackageJsonFile(outDirPath, packageJsonContents);
         const updateResult = await updatePackageJsonVersion(packageJsonPath, release, { write: false });
         await checkUpdateResult(updateResult, release);
         expect(await fs.readJSON(packageJsonPath)).toEqual(packageJsonContents);
@@ -120,14 +120,14 @@ describe('package', () => {
 
     it('update invalid version in package.json', async() => {
       const outDirPath = await createTestOutDir('invalid-version', true);
-      const packageJsonPath = await createPackageJson(outDirPath, { ...packageJsonContents, version: 'invalid' });
+      const packageJsonPath = await createPackageJsonFile(outDirPath, { ...packageJsonContents, version: 'invalid' });
       const errorMessage = 'Version property is not specified or invalid';
       await expect(updatePackageJsonVersion(packageJsonPath, 'major')).rejects.toBe(errorMessage);
     });
 
     it('update by invalid release', async() => {
       const outDirPath = await createTestOutDir('invalid-release', true);
-      const packageJsonPath = await createPackageJson(outDirPath, packageJsonContents);
+      const packageJsonPath = await createPackageJsonFile(outDirPath, packageJsonContents);
       const errorMessage = 'Unable to increase release version';
       await expect(updatePackageJsonVersion(packageJsonPath, 'invalid')).rejects.toBe(errorMessage);
     });
