@@ -101,14 +101,16 @@ export function getCommitRef(branch: string, parents?: Array<string>): string {
   return `${branch}${parents ? parents.join('') : ''}`;
 }
 
+export async function getCommitId(repoPath: string, commitRef: string): Promise<string> {
+  return (await exec(`git rev-list -n 1 ${commitRef}`, repoPath)).stdout;
+}
+
 export async function getCommitMessage(repoPath: string, commitRef: string): Promise<string> {
-  const execaCommand = await exec(`git show-branch --no-name ${commitRef}`, repoPath);
-  return execaCommand.stdout;
+  return (await exec(`git show-branch --no-name ${commitRef}`, repoPath)).stdout;
 }
 
 export async function getCommitDiff(repoPath: string, commitRef1: string, commitRef2: string): Promise<Array<string>> {
-  const execaCommand = await exec(`git diff ${commitRef1} ${commitRef2}`, repoPath);
-  return execaCommand.stdout.split('\n');
+  return (await exec(`git diff ${commitRef1} ${commitRef2}`, repoPath)).stdout.split('\n');
 }
 
 export function extractFileDiff(diff: Array<string>, fileName: string): Array<string> {

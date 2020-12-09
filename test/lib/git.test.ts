@@ -12,6 +12,7 @@ import {
   addRemoteRepository,
   commitAll,
   getCommitRef,
+  getCommitId,
   getCommitMessage,
   getCommitDiff,
   extractFileDiff,
@@ -72,29 +73,18 @@ describe('git', () => {
           developBranch
         });
         await createPackageJsonFile(repoPath, { ...packageJsonContents, version });
-        await updateGitRepositoryVersion(version, {
-          packageJsonPath,
-          ...defaultGitConfig,
-          all: false
-        });
-        await checkDevelopCommitMessage(repoPath, developBranch, version);
-        await checkReleaseCommitMessage(repoPath, releaseBranch, version);
+        await updateGitRepositoryVersion(version, { packageJsonPath, ...defaultGitConfig, all: false });
+        await checkCommits(repoPath, { version, releaseBranch, developBranch });
         const diff = await getLastCommitDiff(repoPath, developBranch);
         expect(extractFileDiff(diff, 'package.json')).toEqual(packageJsonDiff);
+        expect(extractFileDiff(diff, 'CHANGELOG.md')).toEqual([]);
       });
 
       it(`${release} update and commit with changelog`, async() => {
         const {
-          version,
-          packageJsonContents,
-          packageJsonDiff,
-          changeLogContentsInitial,
-          changeLogContentsAltered,
-          changeLogDiff
-        } = extractGitFixtureData({
-          release,
-          withChangeLog: true
-        });
+          version, packageJsonContents, packageJsonDiff,
+          changeLogContentsInitial, changeLogContentsAltered, changeLogDiff
+        } = extractGitFixtureData({ release, withChangeLog: true });
         if (!changeLogContentsInitial || !changeLogContentsAltered || !changeLogDiff) {
           return Promise.reject('Changelog fixture data is not available');
         }
@@ -110,14 +100,8 @@ describe('git', () => {
         }
         await createPackageJsonFile(repoPath, { ...packageJsonContents, version });
         await createChangeLogFile(repoPath, changeLogContentsAltered);
-        await updateGitRepositoryVersion(version, {
-          packageJsonPath,
-          changeLogPath,
-          ...defaultGitConfig,
-          all: false
-        });
-        await checkDevelopCommitMessage(repoPath, developBranch, version);
-        await checkReleaseCommitMessage(repoPath, releaseBranch, version);
+        await updateGitRepositoryVersion(version, { packageJsonPath, changeLogPath, ...defaultGitConfig, all: false });
+        await checkCommits(repoPath, { version, releaseBranch, developBranch });
         const diff = await getLastCommitDiff(repoPath, developBranch);
         expect(extractFileDiff(diff, 'package.json')).toEqual(packageJsonDiff);
         expect(extractFileDiff(diff, 'CHANGELOG.md')).toEqual(changeLogDiff);
@@ -165,6 +149,25 @@ async function createRepositories(outDirPath: string, options: {
 
 async function getLastCommitDiff(repoPath: string, branch: string) {
   return getCommitDiff(repoPath, getCommitRef(branch, ['~1']), getCommitRef(branch));
+}
+
+async function checkCommits(repoPath: string, options: {
+  version: string;
+  releaseBranch: string;
+  developBranch: string;
+  tag?: boolean;
+}) {
+  const { version, releaseBranch, developBranch, tag = true } = options;
+  await checkDevelopCommitMessage(repoPath, developBranch, version);
+  await checkReleaseCommitMessage(repoPath, releaseBranch, version);
+  const releaseCommitId = await getCommitId(repoPath, releaseBranch);
+  const releaseParent2CommitId = await getCommitId(repoPath, getCommitRef(releaseBranch, ['^2']));
+  const developCommitId = await getCommitId(repoPath, developBranch);
+  expect(releaseParent2CommitId).toEqual(developCommitId);
+  if (tag) {
+    const tagCommitId = await getCommitId(repoPath, version);
+    expect(tagCommitId).toEqual(releaseCommitId);
+  }
 }
 
 async function checkCommitMessage(repoPath: string, branch: string, message: string) {
