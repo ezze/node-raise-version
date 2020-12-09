@@ -34,6 +34,53 @@ export function createRestoreInitialWorkingDir(): Function {
   return () => process.chdir(initialDirPath);
 }
 
+export async function createPackageJson(dirPath: string, contents: { [key: string]: any }): Promise<string> {
+  const packageJsonPath = path.resolve(dirPath, 'package.json');
+  await fs.writeJSON(packageJsonPath, contents, { encoding: 'utf-8', spaces: 2 });
+  return packageJsonPath;
+}
+
+export async function createRaiseVerRc(dirPath: string, contents: RaiseVersionConfig): Promise<string> {
+  const raiseVerRcPath = path.resolve(dirPath, '.raiseverrc');
+  await fs.writeJSON(raiseVerRcPath, contents, { encoding: 'utf-8', spaces: 2 });
+  return raiseVerRcPath;
+}
+
+export async function createRepository(dirPath: string, options?: {
+  dirName?: string;
+  bare?: boolean;
+  initialCommit?: boolean;
+}): Promise<string> {
+  const { dirName, bare = false, initialCommit = false } = options || {};
+  const repoDirPath = path.resolve(dirPath, dirName ? dirName : (bare ? 'repo-bare' : 'repo'));
+  await exec(`git init ${repoDirPath}${bare ? ' --bare' : ''}`);
+  if (initialCommit) {
+    await exec('git commit --allow-empty -m Initial\\ commit.', repoDirPath);
+  }
+  return repoDirPath;
+}
+
+export async function createBranch(repoPath: string, branchName: string): Promise<void> {
+
+}
+
+export async function addRemoteRepository(
+  repoPath: string,
+  remoteRepoPath: string,
+  remoteName = 'origin'
+): Promise<void> {
+  await exec(`git remote add ${remoteName} ${remoteRepoPath}`, repoPath);
+}
+
+export async function commitAll(repoPath: string, message: string): Promise<void> {
+  await exec('git add -A', repoPath);
+  await exec(`git commit -m ${escapeWhitespaces(message)}`, repoPath);
+}
+
+function escapeWhitespaces(message: string) {
+  return message.replace(/ /g, '\\ ');
+}
+
 export async function loadFixtureFile(
   relativeFilePath: string,
   tokens?: Record<string, string>
@@ -66,21 +113,28 @@ export async function copyFixtureFile(
   return destFilePath;
 }
 
-export async function createPackageJson(dirPath: string, contents: { [key: string]: any }): Promise<string> {
-  const packageJsonPath = path.resolve(dirPath, 'package.json');
-  await fs.writeJSON(packageJsonPath, contents, { encoding: 'utf-8', spaces: 2 });
-  return packageJsonPath;
-}
+export async function exec(command: string, workingDirPath?: string): Promise<execa.ExecaChildProcess> {
+  let relativePath = '';
+  const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
+  if (workingDirPath) {
+    relativePath = path.relative(process.cwd(), workingDirPath);
+    process.chdir(workingDirPath);
+  }
 
-export async function createRaiseVerRc(dirPath: string, contents: RaiseVersionConfig): Promise<string> {
-  const raiseVerRcPath = path.resolve(dirPath, '.raiseverrc');
-  await fs.writeJSON(raiseVerRcPath, contents, { encoding: 'utf-8', spaces: 2 });
-  return raiseVerRcPath;
-}
-
-export async function exec(command: string): Promise<void> {
   try {
-    await execa.command(command);
+    console.log(`${relativePath}$ ${command}`);
+    const execaCommand = execa.command(command);
+    if (execaCommand.stdout) {
+      execaCommand.stdout.pipe(process.stdout);
+    }
+    if (execaCommand.stderr) {
+      execaCommand.stderr.pipe(process.stderr);
+    }
+    await execaCommand;
+    if (workingDirPath) {
+      restoreInitialWorkingDir();
+    }
+    return execaCommand;
   }
   catch (e) {
     console.error(e);
