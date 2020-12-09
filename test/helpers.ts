@@ -40,7 +40,7 @@ export async function createPackageJsonFile(dirPath: string, contents: { [key: s
   return packageJsonPath;
 }
 
-export async function createChangeLogFile(dirPath: string, contents: Array<string>,): Promise<string> {
+export async function createChangeLogFile(dirPath: string, contents: Array<string>): Promise<string> {
   const changeLogPath = path.resolve(dirPath, 'CHANGELOG.md');
   await fs.writeFile(changeLogPath, contents.join('\n'), { encoding: 'utf-8' });
   return changeLogPath;
@@ -181,7 +181,6 @@ function applyTokensToLine(line: string, tokens: Record<string, string>, multili
 function applyTokensToLines(lines: Array<string>, tokens: Record<string, string>) {
   return lines.map(line => applyTokensToLine(line, tokens));
 }
-
 
 export async function copyFixtureFile(
   relativeFilePath: string,
