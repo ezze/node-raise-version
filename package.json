@@ -15,9 +15,9 @@
     "watch": "npm run clean && tsc -p tsconfig.json --watch",
     "clean": "rimraf bin lib",
     "raise": "src/bin/raiseVersion.ts",
-    "test": "jest --config jest.config.ts --runInBand",
-    "test:coverage": "rimraf coverage && jest --config jest.coverage.config.ts --runInBand",
-    "test:ci": "rimraf coverage reports && cross-env JEST_JUNIT_OUTPUT_DIR=reports/junit jest --config jest.coverage.config.ts --ci --reporters=default --reporters=jest-junit --runInBand",
+    "test": "jest --config test/jest.config.ts --runInBand",
+    "test:coverage": "rimraf coverage && jest --config test/jest.coverage.config.ts --runInBand",
+    "test:ci": "rimraf coverage reports && cross-env JEST_JUNIT_OUTPUT_DIR=reports/junit jest --config test/jest.coverage.config.ts --ci --reporters=default --reporters=jest-junit --runInBand",
     "lint": "eslint src",
     "lint:test": "eslint test"
   },

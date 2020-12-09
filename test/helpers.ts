@@ -54,16 +54,26 @@ export async function createRaiseVerRc(dirPath: string, contents: RaiseVersionCo
 
 export async function createRepository(dirPath: string, options?: {
   dirName?: string;
+  userName?: string;
+  userEmail?: string;
   bare?: boolean;
   initialCommit?: boolean;
 }): Promise<string> {
-  const { dirName, bare = false, initialCommit = false } = options || {};
-  const repoDirPath = path.resolve(dirPath, dirName ? dirName : (bare ? 'repo-bare' : 'repo'));
-  await exec(`git init ${repoDirPath}${bare ? ' --bare' : ''}`);
+  const {
+    dirName,
+    bare = false,
+    initialCommit = false,
+    userName = 'Raise Version',
+    userEmail = 'raise@version.com'
+  } = options || {};
+  const repoPath = path.resolve(dirPath, dirName ? dirName : (bare ? 'repo-bare' : 'repo'));
+  await exec(`git init ${repoPath}${bare ? ' --bare' : ''}`);
+  await exec(`git config --local user.name ${escapeWhitespaces(userName)}`, repoPath);
+  await exec(`git config --local user.email ${escapeWhitespaces(userEmail)}`, repoPath);
   if (initialCommit) {
-    await exec('git commit --allow-empty -m Initial\\ commit.', repoDirPath);
+    await exec(`git commit --allow-empty -m ${escapeWhitespaces('Initial commit.')}`, repoPath);
   }
-  return repoDirPath;
+  return repoPath;
 }
 
 export async function createBranch(repoPath: string, branch: string, commit?: string): Promise<void> {
@@ -126,10 +136,6 @@ export function extractFileDiff(diff: Array<string>, fileName: string): Array<st
     }
   }
   return fileDiff;
-}
-
-function escapeWhitespaces(message: string) {
-  return message.replace(/ /g, '\\ ');
 }
 
 export async function loadFixtureFile(
@@ -220,6 +226,10 @@ export async function exec(command: string, workingDirPath?: string): Promise<ex
     console.error(e);
     return Promise.reject(`Unable to execute a command: "${command}"`);
   }
+}
+
+function escapeWhitespaces(message: string) {
+  return message.replace(/ /g, '\\ ');
 }
 
 function getTestRelativeDirPath() {
