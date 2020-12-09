@@ -30,9 +30,9 @@ describe('git', () => {
       version: string;
       packageJsonContents: Record<string, any>;
       packageJsonDiff: Array<string>;
-      changeLogContentsInitial?: Array<string>;
-      changeLogContentsAltered?: Array<string>;
-      changeLogDiff?: Array<string>;
+      changeLogContentsInitial: Array<string>;
+      changeLogContentsAltered: Array<string>;
+      changeLogDiff: Array<string>;
     } => {
       const { release } = options;
       const { versions, packageJson, changeLog } = gitFixture;
@@ -97,18 +97,12 @@ describe('git', () => {
           version, packageJsonContents, packageJsonDiff,
           changeLogContentsInitial, changeLogContentsAltered, changeLogDiff
         } = extractGitFixtureData({ release });
-        if (!changeLogContentsInitial || !changeLogContentsAltered || !changeLogDiff) {
-          return Promise.reject('Changelog fixture data is not available');
-        }
         const outDirPath = await createTestOutDir(`gitflow-${release}-update`, true);
         const { repoPath, packageJsonPath, changeLogPath } = await createRepositories(outDirPath, {
           packageJsonContents,
           changeLogContents: changeLogContentsInitial,
           developBranch
         });
-        if (!changeLogPath) {
-          return Promise.reject('Changelog file is not available');
-        }
         await createPackageJsonFile(repoPath, { ...packageJsonContents, version });
         await createChangeLogFile(repoPath, changeLogContentsAltered);
         await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, changeLogPath, all: false });
