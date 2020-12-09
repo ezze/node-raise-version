@@ -4,7 +4,7 @@ import { fileExists } from '../../src/lib/utils';
 
 import {
   createTestOutDir,
-  createFile,
+  createTextFile,
   createDir
 } from '../helpers';
 
@@ -13,7 +13,7 @@ describe('utils', () => {
     it('check that file exists', async() => {
       const outDirPath = await createTestOutDir('file-exists');
       const filePath = path.resolve(outDirPath, 'file');
-      await createFile(filePath);
+      await createTextFile(filePath);
       expect(await fileExists(filePath)).toBe(true);
     });
 

@@ -18,9 +18,8 @@ export async function createTestOutDir(name?: string, cwd = false): Promise<stri
   return resultPath;
 }
 
-export async function createFile(filePath: string): Promise<string> {
-  const file = await fs.open(filePath, 'w');
-  await fs.close(file);
+export async function createTextFile(filePath: string, contents = ''): Promise<string> {
+  await fs.writeFile(filePath, contents, { encoding: 'utf-8' });
   return filePath;
 }
 
@@ -132,7 +131,7 @@ export function extractFileDiff(diff: Array<string>, fileName: string): Array<st
       if (line.startsWith('@@')) {
         diffStarted = true;
       }
-      else if (diffStarted) {
+      else if (diffStarted && line.indexOf('No newline at end of file') === -1) {
         fileDiff.push(line);
       }
     }
@@ -210,7 +209,7 @@ export async function exec(command: string, workingDirPath?: string): Promise<ex
   }
 
   try {
-    console.log(`${relativePath}$ ${command}`);
+    console.log(`${relativePath ? relativePath : ''}$ ${command}`);
     const execaCommand = execa.command(command);
     if (execaCommand.stdout) {
       execaCommand.stdout.pipe(process.stdout);

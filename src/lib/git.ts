@@ -144,10 +144,7 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
 }
 
 async function executeGitCommand(gitCommand: string, options?: GitCommandOptions): Promise<execa.ExecaChildProcess> {
-  const {
-    repoPath = process.cwd(),
-    verbose = true
-  } = options || {};
+  const { repoPath = process.cwd(), verbose = true } = options || {};
 
   let relativePath;
   const initialWorkingDirPath = process.cwd();
@@ -158,7 +155,7 @@ async function executeGitCommand(gitCommand: string, options?: GitCommandOptions
 
   const command = `git ${gitCommand}`;
   if (verbose) {
-    console.log(`${relativePath}$ ${command}`);
+    console.log(`${relativePath ? relativePath : ''}$ ${command}`);
   }
   try {
     const execaCommand = execa.command(command);
