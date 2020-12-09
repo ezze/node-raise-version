@@ -4,16 +4,16 @@ import { getPackageJsonPath, getPackageJsonVersion, updatePackageJsonVersion } f
 import { updateChangeLogVersion } from './changeLog';
 import { updateGitRepositoryVersion } from './git';
 
-export default async function raiseVersion(config: RaiseVersionConfig): Promise<string> {
+export default async function raiseVersion(options: RaiseVersionConfigOptional = {}): Promise<string> {
   const packageJsonPath = await getPackageJsonPath();
   if (!packageJsonPath) {
     return Promise.reject('Unable to locate "package.json" file');
   }
 
   const rcConfig = await getRaiseVerRcConfig();
-  const { skipUpdate, release } = { ...rcConfig, ...config };
-  const changelog = { ...rcConfig.changelog, ...config.changelog };
-  const git = { ...rcConfig.git, ...config.git };
+  const { skipUpdate, release } = { ...rcConfig, ...options };
+  const changelog = { ...rcConfig.changelog, ...options.changelog };
+  const git = { ...rcConfig.git, ...options.git };
 
   // Updating package.json
   let version, legacyVersion;

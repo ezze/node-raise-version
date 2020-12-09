@@ -68,7 +68,9 @@ yarn add raise-version --dev
 const raiseVersion = require('raise-version');
 raiseVersion({
   release: 'patch',
-  gitPush: true
+  git: {
+    push: true
+  }
 }).catch(function(e) {
   console.error('Something went wrong');
 });
