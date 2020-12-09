@@ -60,11 +60,11 @@ describe('git', () => {
         await expect(updateGitRepositoryVersion(version, { repoPath, packageJsonPath })).rejects.toBe(errorMessage);
       });
 
-      it(`gitflow ${release}: update and commit`, async() => {
+      it(`gitflow ${release}: commit`, async() => {
         const {
           version, repoPath, developBranch,
           packageJsonPath, packageJsonContentsAltered, packageJsonDiff
-        } = await initialize(`gitflow-${release}-update-commit`, release, { packageJson: true });
+        } = await initialize(`gitflow-${release}-commit`, release, { packageJson: true });
         if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
           return initializationError();
         }
@@ -73,11 +73,11 @@ describe('git', () => {
         await checkRepoUpdate(repoPath, { version, releaseBranch, developBranch, packageJsonDiff });
       });
 
-      it(`gitflow ${release}: update and commit all`, async() => {
+      it(`gitflow ${release}: commit all`, async() => {
         const {
           version, repoPath, developBranch,
           packageJsonPath, packageJsonContentsAltered, packageJsonDiff
-        } = await initialize(`gitflow-${release}-update-commit-all`, release, { packageJson: true });
+        } = await initialize(`gitflow-${release}-commit-all`, release, { packageJson: true });
         if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
           return initializationError();
         }
@@ -90,11 +90,11 @@ describe('git', () => {
         expect(extractFileDiff(diff, fileName)).toEqual([`+${fileContents}`]);
       });
 
-      it(`gitflow ${release}: update, commit and push to remote repository`, async() => {
+      it(`gitflow ${release}: commit and push to remote repository`, async() => {
         const {
           version, repoPath, remoteRepoPath, developBranch,
           packageJsonPath, packageJsonContentsAltered, packageJsonDiff
-        } = await initialize(`gitflow-${release}-update-commit-push`, release, { remoteName, packageJson: true });
+        } = await initialize(`gitflow-${release}-commit-push`, release, { remoteName, packageJson: true });
         if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
           return initializationError();
         }
@@ -103,13 +103,28 @@ describe('git', () => {
         await checkRepoUpdate(repoPath, { remoteRepoPath, version, releaseBranch, developBranch, packageJsonDiff });
       });
 
-      it(`gitflow ${release}: update and commit with changelog`, async() => {
+      it(`gitflow ${release}: don't commit, just push to remote repository`, async() => {
+        const {
+          repoPath, remoteRepoPath, developBranch,
+          packageJsonPath, packageJsonContents, packageJsonDiff
+        } = await initialize(`gitflow-${release}-no-commit-push`, release, { remoteName, packageJson: true });
+        if (!packageJsonPath || !packageJsonContents || !packageJsonDiff) {
+          return initializationError();
+        }
+        const { version } = packageJsonContents;
+        await updateGitRepositoryVersion(version, { repoPath, commit: false, push: true });
+        await checkRepoUpdate(repoPath, {
+          remoteRepoPath, version, releaseBranch, developBranch, packageJsonDiff, commit: false
+        });
+      });
+
+      it(`gitflow ${release}: commit with changelog`, async() => {
         const {
           version, repoPath, developBranch,
           packageJsonPath, packageJsonContentsAltered, packageJsonDiff,
           changeLogPath, changeLogContentsAltered, changeLogDiff
         } = await initialize(
-          `gitflow-${release}-update-commit-changelog`,
+          `gitflow-${release}-commit-changelog`,
           release, { packageJson: true, changeLog: true }
         );
         if (
@@ -138,9 +153,11 @@ async function initialize(dirName: string, release: string, options?: {
   remoteRepoPath?: string;
   developBranch: string;
   packageJsonPath?: string;
-  packageJsonContentsAltered?: Array<string>;
+  packageJsonContents?: { [key: string]: any };
+  packageJsonContentsAltered?: { [key: string]: any };
   packageJsonDiff?: Array<string>;
   changeLogPath?: string;
+  changeLogContents?: Array<string>;
   changeLogContentsAltered?: Array<string>;
   changeLogDiff?: Array<string>;
 }> {
@@ -155,7 +172,7 @@ async function initialize(dirName: string, release: string, options?: {
     version,
     packageJsonContents,
     packageJsonDiff,
-    changeLogContentsInitial,
+    changeLogContentsInitial: changeLogContents,
     changeLogContentsAltered,
     changeLogDiff
   } = await extractGitFixtureData({ release });
@@ -166,7 +183,7 @@ async function initialize(dirName: string, release: string, options?: {
     Object.assign(createOptions, { packageJsonContents });
   }
   if (changeLog) {
-    Object.assign(createOptions, { changeLogContents: changeLogContentsInitial });
+    Object.assign(createOptions, { changeLogContents });
   }
 
   const {
@@ -182,10 +199,10 @@ async function initialize(dirName: string, release: string, options?: {
   }
   if (packageJson) {
     const packageJsonContentsAltered = { ...packageJsonContents, version };
-    Object.assign(data, { packageJsonPath, packageJsonContentsAltered, packageJsonDiff });
+    Object.assign(data, { packageJsonPath, packageJsonContents, packageJsonContentsAltered, packageJsonDiff });
   }
   if (changeLog) {
-    Object.assign(data, { changeLogPath, changeLogContentsAltered, changeLogDiff });
+    Object.assign(data, { changeLogPath, changeLogContents, changeLogContentsAltered, changeLogDiff });
   }
   return data;
 }
@@ -275,14 +292,20 @@ async function checkRepoUpdate(repoPath: string, options: {
   developBranch: string;
   packageJsonDiff?: Array<string>;
   changeLogDiff?: Array<string>;
+  commit?: boolean;
 }): Promise<{
   diff: Array<string>;
 }> {
-  const { remoteRepoPath, version, releaseBranch, developBranch, packageJsonDiff = [], changeLogDiff = [] } = options;
-  await checkCommits(repoPath, { remoteRepoPath, version, releaseBranch, developBranch });
+  const {
+    remoteRepoPath, version, releaseBranch, developBranch,
+    packageJsonDiff = [], changeLogDiff = [], commit = true
+  } = options;
+  await checkCommits(repoPath, { remoteRepoPath, version, releaseBranch, developBranch, commit });
   const diff = await getLastCommitDiff(repoPath, developBranch);
-  expect(extractFileDiff(diff, 'package.json')).toEqual(packageJsonDiff);
-  expect(extractFileDiff(diff, 'CHANGELOG.md')).toEqual(changeLogDiff);
+  if (commit) {
+    expect(extractFileDiff(diff, 'package.json')).toEqual(packageJsonDiff);
+    expect(extractFileDiff(diff, 'CHANGELOG.md')).toEqual(changeLogDiff);
+  }
   return { diff };
 }
 
@@ -291,11 +314,15 @@ async function checkCommits(repoPath: string, options: {
   version: string;
   releaseBranch: string;
   developBranch: string;
+  commit?: boolean;
   tag?: boolean;
 }) {
-  const { remoteRepoPath, version, releaseBranch, developBranch, tag = true } = options;
-  await checkDevelopCommitMessage(repoPath, developBranch, version);
-  await checkReleaseCommitMessage(repoPath, releaseBranch, version);
+  const { remoteRepoPath, version, releaseBranch, developBranch, commit = true, tag = true } = options;
+
+  if (commit) {
+    await checkDevelopCommitMessage(repoPath, developBranch, version);
+    await checkReleaseCommitMessage(repoPath, releaseBranch, version);
+  }
 
   const developCommitId = await getCommitId(repoPath, developBranch);
   const releaseCommitId = await getCommitId(repoPath, releaseBranch);

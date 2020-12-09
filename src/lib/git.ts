@@ -3,7 +3,7 @@ import path from 'path';
 
 declare interface UpdateGitRepositoryVersionOptions extends GitOptionsSoft {
   repoPath?: string;
-  packageJsonPath: string;
+  packageJsonPath?: string;
   changeLogPath?: string;
   verbose?: boolean;
 }
@@ -55,7 +55,10 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
         await gitAdd('-A', gitCommandOptions);
       }
       else {
-        const filePaths = [packageJsonPath];
+        const filePaths = [];
+        if (packageJsonPath) {
+          filePaths.push(packageJsonPath);
+        }
         if (changeLogPath) {
           filePaths.push(changeLogPath);
         }
