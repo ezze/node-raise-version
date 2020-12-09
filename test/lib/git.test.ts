@@ -23,7 +23,6 @@ import {
 describe('git', () => {
   describe('updateGitRepositoryVersion', () => {
     let gitFixture: Record<string, any>;
-    let defaultGitConfig: GitConfig;
 
     const extractGitFixtureData = (options: {
       release?: string;
@@ -55,15 +54,16 @@ describe('git', () => {
 
     beforeAll(async() => {
       gitFixture = await loadFixtureFile('git.json');
-      defaultGitConfig = (await loadFixtureFile('.raiseverrc-default.json')).git;
     });
 
     const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
     afterEach(() => restoreInitialWorkingDir());
 
+    const releaseBranch = 'master';
+    const developBranch = 'develop';
+
     it('don\'t commit from non-development branch', async() => {
       const { version, packageJsonContents } = extractGitFixtureData();
-      const { release: releaseBranch, development: developBranch } = defaultGitConfig;
       const outDirPath = await createTestOutDir('no-commit-from-non-develop', true);
       const { repoPath, packageJsonPath } = await createRepositories(outDirPath, {
         packageJsonContents,
@@ -79,7 +79,6 @@ describe('git', () => {
     ['major', 'minor', 'patch'].forEach(release => {
       it(`${release} update and commit without changelog`, async() => {
         const { version, packageJsonContents, packageJsonDiff } = extractGitFixtureData({ release });
-        const { release: releaseBranch, development: developBranch } = defaultGitConfig;
         const outDirPath = await createTestOutDir(`gitflow-${release}-update-no-changelog`, true);
         const { repoPath, packageJsonPath } = await createRepositories(outDirPath, {
           packageJsonContents,
@@ -101,7 +100,6 @@ describe('git', () => {
         if (!changeLogContentsInitial || !changeLogContentsAltered || !changeLogDiff) {
           return Promise.reject('Changelog fixture data is not available');
         }
-        const { release: releaseBranch, development: developBranch } = defaultGitConfig;
         const outDirPath = await createTestOutDir(`gitflow-${release}-update`, true);
         const { repoPath, packageJsonPath, changeLogPath } = await createRepositories(outDirPath, {
           packageJsonContents,
