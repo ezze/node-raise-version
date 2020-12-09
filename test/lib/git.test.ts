@@ -17,7 +17,7 @@ import {
   getCommitDiff,
   extractFileDiff,
   loadFixtureFile,
-  applyTokens
+  applyTokens, checkoutBranch
 } from '../helpers';
 
 describe('git', () => {
@@ -26,9 +26,8 @@ describe('git', () => {
     let defaultGitConfig: GitConfig;
 
     const extractGitFixtureData = (options: {
-      release: string;
-      withChangeLog?: boolean;
-    }): {
+      release?: string;
+    } = {}): {
       version: string;
       packageJsonContents: Record<string, any>;
       packageJsonDiff: Array<string>;
@@ -36,23 +35,22 @@ describe('git', () => {
       changeLogContentsAltered?: Array<string>;
       changeLogDiff?: Array<string>;
     } => {
-      const { release, withChangeLog } = options;
+      const { release } = options;
       const { versions, packageJson, changeLog } = gitFixture;
-      const version = versions[release];
-      const result = {
+      const version = release ? versions[release] : null;
+      const date = moment().format('YYYY-MM-DD');
+      const tokens = { date };
+      if (version) {
+        Object.assign(tokens, { version });
+      }
+      return {
         version,
         packageJsonContents: packageJson.contents,
-        packageJsonDiff: applyTokens(packageJson.diff, { version })
+        packageJsonDiff: applyTokens(packageJson.diff, tokens),
+        changeLogContentsInitial: changeLog.contents.initial,
+        changeLogContentsAltered: applyTokens(changeLog.contents.altered, tokens),
+        changeLogDiff: applyTokens(changeLog.diff, tokens)
       };
-      if (withChangeLog) {
-        const date = moment().format('YYYY-MM-DD');
-        Object.assign(result, {
-          changeLogContentsInitial: changeLog.contents.initial,
-          changeLogContentsAltered: applyTokens(changeLog.contents.altered, { version, date }),
-          changeLogDiff: applyTokens(changeLog.diff, { version, date })
-        });
-      }
-      return result;
     };
 
     beforeAll(async() => {
@@ -62,6 +60,21 @@ describe('git', () => {
 
     const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
     afterEach(() => restoreInitialWorkingDir());
+
+    it('don\'t commit from non-development branch', async() => {
+      const { version, packageJsonContents } = extractGitFixtureData();
+      const { release: releaseBranch, development: developBranch } = defaultGitConfig;
+      const outDirPath = await createTestOutDir('no-commit-from-non-develop', true);
+      const { repoPath, packageJsonPath } = await createRepositories(outDirPath, {
+        packageJsonContents,
+        developBranch
+      });
+      await checkoutBranch(repoPath, releaseBranch);
+      await expect(updateGitRepositoryVersion(version, { repoPath, packageJsonPath, all: false })).rejects.toBe(
+        `Git repository can be updated only from development "${developBranch}" branch, ` +
+        `currently on "${releaseBranch}".`
+      );
+    });
 
     ['major', 'minor', 'patch'].forEach(release => {
       it(`${release} update and commit without changelog`, async() => {
@@ -73,7 +86,7 @@ describe('git', () => {
           developBranch
         });
         await createPackageJsonFile(repoPath, { ...packageJsonContents, version });
-        await updateGitRepositoryVersion(version, { packageJsonPath, ...defaultGitConfig, all: false });
+        await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, all: false });
         await checkCommits(repoPath, { version, releaseBranch, developBranch });
         const diff = await getLastCommitDiff(repoPath, developBranch);
         expect(extractFileDiff(diff, 'package.json')).toEqual(packageJsonDiff);
@@ -84,7 +97,7 @@ describe('git', () => {
         const {
           version, packageJsonContents, packageJsonDiff,
           changeLogContentsInitial, changeLogContentsAltered, changeLogDiff
-        } = extractGitFixtureData({ release, withChangeLog: true });
+        } = extractGitFixtureData({ release });
         if (!changeLogContentsInitial || !changeLogContentsAltered || !changeLogDiff) {
           return Promise.reject('Changelog fixture data is not available');
         }
@@ -100,7 +113,7 @@ describe('git', () => {
         }
         await createPackageJsonFile(repoPath, { ...packageJsonContents, version });
         await createChangeLogFile(repoPath, changeLogContentsAltered);
-        await updateGitRepositoryVersion(version, { packageJsonPath, changeLogPath, ...defaultGitConfig, all: false });
+        await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, changeLogPath, all: false });
         await checkCommits(repoPath, { version, releaseBranch, developBranch });
         const diff = await getLastCommitDiff(repoPath, developBranch);
         expect(extractFileDiff(diff, 'package.json')).toEqual(packageJsonDiff);

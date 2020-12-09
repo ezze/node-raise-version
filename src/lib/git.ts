@@ -1,7 +1,8 @@
 import execa from 'execa';
 import path from 'path';
 
-declare interface UpdateGitRepositoryVersionOptions extends GitOptions {
+declare interface UpdateGitRepositoryVersionOptions extends GitOptionsSoft {
+  repoPath?: string;
   packageJsonPath: string;
   changeLogPath?: string;
   verbose?: boolean;
@@ -14,6 +15,7 @@ interface GitCommandOptions {
 
 async function updateGitRepositoryVersion(version: string, options: UpdateGitRepositoryVersionOptions): Promise<void> {
   const {
+    repoPath = process.cwd(),
     packageJsonPath,
     changeLogPath,
     verbose = true,
@@ -31,10 +33,7 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
     console.log('Updating git repository...');
   }
 
-  const gitCommandOptions: GitCommandOptions = {
-    repoPath: process.cwd(),
-    verbose
-  };
+  const gitCommandOptions: GitCommandOptions = { repoPath, verbose };
 
   const current = await gitCurrentBranch(gitCommandOptions);
   if (current !== development) {
