@@ -1,11 +1,11 @@
 import { releases } from './constants';
 import { getRaiseVerRcConfig } from './config';
-import { findPackageJson, getPackageJsonVersion, updatePackageJsonVersion } from './package';
+import { getPackageJsonPath, getPackageJsonVersion, updatePackageJsonVersion } from './package';
 import { updateChangeLogVersion } from './changeLog';
 import { updateGitRepositoryVersion } from './git';
 
 export default async function raiseVersion(config: RaiseVersionConfig): Promise<string> {
-  const packageJsonPath = await findPackageJson();
+  const packageJsonPath = await getPackageJsonPath();
   if (!packageJsonPath) {
     return Promise.reject('Unable to locate "package.json" file');
   }

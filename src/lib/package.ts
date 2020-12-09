@@ -5,33 +5,9 @@ import semver, { ReleaseType } from 'semver';
 import { releases } from './constants';
 import { fileExists } from './utils';
 
-export async function findPackageJson(
-  rootDirPath = process.cwd(),
-  workingDirPath?: string
-): Promise<string | null> {
-  if (!workingDirPath) {
-    workingDirPath = rootDirPath;
-  }
-
-  const normalizedRootDirPath = path.normalize(rootDirPath);
-  const normalizedWorkingDirPath = path.normalize(workingDirPath);
-  if (normalizedWorkingDirPath.indexOf(normalizedRootDirPath) !== 0) {
-    return Promise.reject('Working directory is outside of root directory');
-  }
-
+export async function getPackageJsonPath(workingDirPath = process.cwd()): Promise<string | null> {
   const packageJsonPath = path.resolve(workingDirPath, 'package.json');
-  if (await fileExists(packageJsonPath)) {
-    return packageJsonPath;
-  }
-
-  const rootDirPathParts = rootDirPath.split(path.sep);
-  const workingDirPathParts = workingDirPath.split(path.sep);
-  if (workingDirPathParts.length === 1 || workingDirPathParts.length <= rootDirPathParts.length) {
-    return null;
-  }
-  workingDirPathParts.pop();
-
-  return findPackageJson(rootDirPath, workingDirPathParts.join(path.sep));
+  return await fileExists(packageJsonPath) ? packageJsonPath : null;
 }
 
 export async function getPackageJsonVersion(packageJsonPath: string): Promise<string> {

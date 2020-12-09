@@ -1,5 +1,4 @@
 const config = {
-  rootDir: '../',
   roots: [
     '<rootDir>/src',
     '<rootDir>/test'
@@ -8,5 +7,15 @@ const config = {
   preset: 'ts-jest',
   globalSetup: '<rootDir>/test/globalSetup.ts'
 };
+
+if (process.env.COVERAGE) {
+  Object.assign(config, {
+    collectCoverage: true,
+    collectCoverageFrom: [
+      'src/**/*.ts'
+    ],
+    coverageDirectory: '<rootDir>/coverage'
+  });
+}
 
 export default config;

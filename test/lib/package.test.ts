@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {
-  findPackageJson,
+  getPackageJsonPath,
   getPackageJsonVersion,
   updatePackageJsonVersion
 } from '../../src/lib/package';
@@ -30,31 +30,23 @@ describe('package', () => {
   const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
   afterEach(() => restoreInitialWorkingDir());
 
-  describe('findPackageJson', () => {
-    it('find package.json in root directory', async() => {
+  describe('getPackageJsonPath', () => {
+    it('get package.json path in root directory', async() => {
       const outDirPath = await createTestOutDir('find-in-working', true);
       const packageJsonPath = await createPackageJsonFile(outDirPath, packageJsonContents);
-      expect(await findPackageJson()).toBe(packageJsonPath);
+      expect(await getPackageJsonPath()).toBe(packageJsonPath);
     });
 
-    it('find package.json starting from nested directory', async() => {
+    it('don\'t get package.json path when it doesn\'t exist', async() => {
+      await createTestOutDir('no-package-json', true);
+      expect(await getPackageJsonPath()).toBe(null);
+    });
+
+    it('don\'t get package.json path when it\'s when looking for it in nested directory', async() => {
       const outDirPath = await createTestOutDir('find-from-nested', true);
       const nestedDirPath = await createDir(path.resolve(outDirPath, 'nested'));
-      const packageJsonPath = await createPackageJsonFile(outDirPath, packageJsonContents);
-      expect(await findPackageJson(outDirPath, nestedDirPath)).toBe(packageJsonPath);
-    });
-
-    it('don\'t find package.json if it doesn\'t exist', async() => {
-      await createTestOutDir('no-package-json', true);
-      expect(await findPackageJson()).toBe(null);
-    });
-
-    it('look for package.json outside of root directory', async() => {
-      const outDirPath = await createTestOutDir('working-outside-of-root', true);
-      const rootDirPath = await createDir(path.resolve(outDirPath, 'root'));
       await createPackageJsonFile(outDirPath, packageJsonContents);
-      const errorMessage = 'Working directory is outside of root directory';
-      await expect(findPackageJson(rootDirPath, outDirPath)).rejects.toBe(errorMessage);
+      expect(await getPackageJsonPath(nestedDirPath)).toBe(null);
     });
   });
 

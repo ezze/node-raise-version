@@ -2,11 +2,11 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import { raiseVerRcName, defaultRaiseVerConfig } from './constants';
-import { findPackageJson } from './package';
+import { getPackageJsonPath } from './package';
 import { fileExists } from './utils';
 
-export async function detectRaiseVerRcPath(workingDirPath: string = process.cwd()): Promise<string | null> {
-  const packageJsonPath = await findPackageJson(workingDirPath);
+export async function detectRaiseVerRcPath(workingDirPath = process.cwd()): Promise<string | null> {
+  const packageJsonPath = await getPackageJsonPath(workingDirPath);
   if (!packageJsonPath) {
     return null;
   }
