@@ -73,7 +73,7 @@ describe('git', () => {
         await checkRepoUpdate(repoPath, { version, releaseBranch, developBranch, packageJsonDiff });
       });
 
-      it.only(`gitflow ${release}: update and commit all`, async() => {
+      it(`gitflow ${release}: update and commit all`, async() => {
         const {
           version, repoPath, developBranch,
           packageJsonPath, packageJsonContentsAltered, packageJsonDiff
