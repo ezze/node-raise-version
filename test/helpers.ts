@@ -157,6 +157,17 @@ export async function loadTextFile(filePath: string, tokens?: Record<string, str
   return contents.split('\n');
 }
 
+export async function copyFixtureFile(
+  relativeFilePath: string,
+  destDirPath: string,
+  fileName?: string
+): Promise<string> {
+  const filePath = path.resolve(fixturesDirPath, relativeFilePath);
+  const destFilePath = path.resolve(destDirPath, fileName ? fileName : path.basename(filePath));
+  await fs.copyFile(filePath, destFilePath);
+  return destFilePath;
+}
+
 export function applyTokens(
   item: string | Array<string> | Record<string, any>,
   tokens: Record<string, string>
@@ -188,17 +199,6 @@ function applyTokensToLines(lines: Array<string>, tokens: Record<string, string>
   return lines.map(line => applyTokensToLine(line, tokens));
 }
 
-export async function copyFixtureFile(
-  relativeFilePath: string,
-  destDirPath: string,
-  fileName?: string
-): Promise<string> {
-  const filePath = path.resolve(fixturesDirPath, relativeFilePath);
-  const destFilePath = path.resolve(destDirPath, fileName ? fileName : path.basename(filePath));
-  await fs.copyFile(filePath, destFilePath);
-  return destFilePath;
-}
-
 export async function exec(command: string, workingDirPath?: string): Promise<execa.ExecaChildProcess> {
   let relativePath = '';
   const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
@@ -217,14 +217,16 @@ export async function exec(command: string, workingDirPath?: string): Promise<ex
       execaCommand.stderr.pipe(process.stderr);
     }
     await execaCommand;
-    if (workingDirPath) {
-      restoreInitialWorkingDir();
-    }
     return execaCommand;
   }
   catch (e) {
     console.error(e);
     return Promise.reject(`Unable to execute a command: "${command}"`);
+  }
+  finally {
+    if (workingDirPath) {
+      restoreInitialWorkingDir();
+    }
   }
 }
 

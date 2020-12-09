@@ -1,16 +1,22 @@
 import execa from 'execa';
+import path from 'path';
 
 declare interface UpdateGitRepositoryVersionOptions extends GitOptions {
   packageJsonPath: string;
   changeLogPath?: string;
+  verbose?: boolean;
+}
+
+interface GitCommandOptions {
+  repoPath?: string;
+  verbose?: boolean;
 }
 
 async function updateGitRepositoryVersion(version: string, options: UpdateGitRepositoryVersionOptions): Promise<void> {
-  console.log('Updating git repository...');
-
   const {
     packageJsonPath,
     changeLogPath,
+    verbose = true,
     release = 'master',
     development = 'develop',
     remote = 'origin',
@@ -21,7 +27,16 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
     push = false
   } = options;
 
-  const current = await gitCurrentBranch();
+  if (verbose) {
+    console.log('Updating git repository...');
+  }
+
+  const gitCommandOptions: GitCommandOptions = {
+    repoPath: process.cwd(),
+    verbose
+  };
+
+  const current = await gitCurrentBranch(gitCommandOptions);
   if (current !== development) {
     return Promise.reject(
       `Git repository can be updated only from development "${development}" branch, ` +
@@ -38,84 +53,86 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
   try {
     if (commit) {
       if (all) {
-        await gitAdd('-A');
+        await gitAdd('-A', gitCommandOptions);
       }
       else {
         const filePaths = [packageJsonPath];
         if (changeLogPath) {
           filePaths.push(changeLogPath);
         }
-        await gitAdd(filePaths);
+        await gitAdd(filePaths, gitCommandOptions);
       }
 
-      const diffCachedLines = await gitDiffCached();
+      const diffCachedLines = await gitDiffCached(gitCommandOptions);
       if (diffCachedLines.length === 0) {
         return Promise.reject('There is nothing to commit');
       }
 
       if (gitflow) {
-        await gitCommit(`Raise version: ${version}.`);
+        await gitCommit(`Raise version: ${version}.`, gitCommandOptions);
         developmentCommited = true;
       }
       else {
-        await gitCommit(`Version ${version}.`);
+        await gitCommit(`Version ${version}.`, gitCommandOptions);
         developmentCommited = true;
         if (tag) {
-          await gitTag(version);
+          await gitTag(version, version, gitCommandOptions);
           tagged = true;
         }
       }
     }
 
     if (gitflow && merge) {
-      const stashed = await gitStashAdd();
-      await gitCheckout(release);
-      await gitMerge(development, `Version ${version}.`);
+      const stashed = await gitStashAdd(gitCommandOptions);
+      await gitCheckout(release, gitCommandOptions);
+      await gitMerge(development, `Version ${version}.`, gitCommandOptions);
       releaseCommited = true;
       if (tag) {
-        await gitTag(version);
+        await gitTag(version, version, gitCommandOptions);
         tagged = true;
       }
-      await gitCheckout(development);
+      await gitCheckout(development, gitCommandOptions);
       if (stashed) {
-        await gitStashPop();
+        await gitStashPop(gitCommandOptions);
       }
     }
 
     if (push) {
-      await gitPush(remote, development);
+      await gitPush(remote, development, gitCommandOptions);
       if (gitflow && merge) {
-        await gitPush(remote, release);
+        await gitPush(remote, release, gitCommandOptions);
       }
       if (tag) {
-        await gitPush(remote, '--tags');
+        await gitPush(remote, '--tags', gitCommandOptions);
       }
     }
   }
   catch (e) {
-    console.error('Some git error is occurred, reverting back everything that is possible:');
-    console.error(`- ${release} commited: ${releaseCommited}`);
-    console.error(`- ${development} commited: ${developmentCommited}`);
-    console.error(`- tagged: ${tagged}`);
+    if (verbose) {
+      console.error('Some git error is occurred, reverting back everything that is possible:');
+      console.error(`- ${release} commited: ${releaseCommited}`);
+      console.error(`- ${development} commited: ${developmentCommited}`);
+      console.error(`- tagged: ${tagged}`);
+    }
 
     const gitHardReset = async(branch: string) => {
-      const stashed = await gitStashAdd();
-      const current = await gitCurrentBranch();
+      const stashed = await gitStashAdd(gitCommandOptions);
+      const current = await gitCurrentBranch(gitCommandOptions);
       const checkout = current !== branch;
       if (checkout) {
-        await gitCheckout(branch);
+        await gitCheckout(branch, gitCommandOptions);
       }
-      await executeGitCommand('reset --hard HEAD~1');
+      await executeGitCommand('reset --hard HEAD~1', gitCommandOptions);
       if (checkout) {
-        await gitCheckout(current);
+        await gitCheckout(current, gitCommandOptions);
       }
       if (stashed) {
-        await gitStashPop();
+        await gitStashPop(gitCommandOptions);
       }
     };
 
     if (tagged) {
-      await gitRemoveTag(version);
+      await gitRemoveTag(version, gitCommandOptions);
     }
     if (releaseCommited) {
       await gitHardReset(release);
@@ -127,9 +144,23 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
   }
 }
 
-async function executeGitCommand(gitCommand: string): Promise<execa.ExecaChildProcess> {
+async function executeGitCommand(gitCommand: string, options?: GitCommandOptions): Promise<execa.ExecaChildProcess> {
+  const {
+    repoPath = process.cwd(),
+    verbose = true
+  } = options || {};
+
+  let relativePath;
+  const initialWorkingDirPath = process.cwd();
+  if (repoPath !== initialWorkingDirPath) {
+    relativePath = path.relative(initialWorkingDirPath, repoPath);
+    process.chdir(repoPath);
+  }
+
   const command = `git ${gitCommand}`;
-  console.log(`$ ${command}`);
+  if (verbose) {
+    console.log(`${relativePath}$ ${command}`);
+  }
   try {
     const execaCommand = execa.command(command);
     if (execaCommand.stdout) {
@@ -142,68 +173,76 @@ async function executeGitCommand(gitCommand: string): Promise<execa.ExecaChildPr
     return execaCommand;
   }
   catch (e) {
+    if (verbose) {
+      console.error(e);
+    }
     return Promise.reject(`Unable to execute command: ${command}`);
+  }
+  finally {
+    if (initialWorkingDirPath) {
+      process.chdir(initialWorkingDirPath);
+    }
   }
 }
 
-async function gitCurrentBranch() {
-  const branchCommand = await executeGitCommand('rev-parse --abbrev-ref HEAD');
+async function gitCurrentBranch(options?: GitCommandOptions) {
+  const branchCommand = await executeGitCommand('rev-parse --abbrev-ref HEAD', options);
   return branchCommand.stdout.toString();
 }
 
-async function gitDiffCached() {
-  const command = await executeGitCommand('diff --cached');
+async function gitDiffCached(options?: GitCommandOptions) {
+  const command = await executeGitCommand('diff --cached', options);
   return command.stdout ? command.stdout.split('\n') : [];
 }
 
-async function gitCheckout(branch: string) {
-  return executeGitCommand(`checkout ${branch}`);
+async function gitCheckout(branch: string, options?: GitCommandOptions) {
+  return executeGitCommand(`checkout ${branch}`, options);
 }
 
-async function gitStashAdd() {
-  const beforeCount = (await gitStashList()).length;
-  await executeGitCommand('stash');
-  const afterCount = (await gitStashList()).length;
+async function gitStashAdd(options?: GitCommandOptions) {
+  const beforeCount = (await gitStashList(options)).length;
+  await executeGitCommand('stash', options);
+  const afterCount = (await gitStashList(options)).length;
   return afterCount > beforeCount;
 }
 
-async function gitStashPop() {
-  const beforeCount = (await gitStashList()).length;
-  await executeGitCommand('stash pop');
-  const afterCount = (await gitStashList()).length;
+async function gitStashPop(options?: GitCommandOptions) {
+  const beforeCount = (await gitStashList(options)).length;
+  await executeGitCommand('stash pop', options);
+  const afterCount = (await gitStashList(options)).length;
   return afterCount < beforeCount;
 }
 
-async function gitStashList() {
-  const command = await executeGitCommand('stash list');
+async function gitStashList(options?: GitCommandOptions) {
+  const command = await executeGitCommand('stash list', options);
   return command.stdout ? command.stdout.split('\n') : [];
 }
 
-async function gitAdd(filePaths: Array<string> | string) {
+async function gitAdd(filePaths: Array<string> | string, options?: GitCommandOptions) {
   if (!Array.isArray(filePaths)) {
     filePaths = [filePaths];
   }
-  return executeGitCommand(`add ${filePaths.map(filePath => escapeWhitespaces(filePath)).join(' ')}`);
+  return executeGitCommand(`add ${filePaths.map(filePath => escapeWhitespaces(filePath)).join(' ')}`, options);
 }
 
-async function gitCommit(message: string) {
-  return executeGitCommand(`commit -m ${escapeWhitespaces(message)}`);
+async function gitCommit(message: string, options?: GitCommandOptions) {
+  return executeGitCommand(`commit -m ${escapeWhitespaces(message)}`, options);
 }
 
-async function gitMerge(branch: string, message: string) {
-  return executeGitCommand(`merge --no-ff ${branch} -m ${escapeWhitespaces(message)}`);
+async function gitMerge(branch: string, message: string, options?: GitCommandOptions) {
+  return executeGitCommand(`merge --no-ff ${branch} -m ${escapeWhitespaces(message)}`, options);
 }
 
-async function gitTag(version: string, message?: string) {
-  return executeGitCommand(`tag -a ${version} -m ${escapeWhitespaces(message ? message : version)}`);
+async function gitTag(version: string, message?: string, options?: GitCommandOptions) {
+  return executeGitCommand(`tag -a ${version} -m ${escapeWhitespaces(message ? message : version)}`, options);
 }
 
-async function gitRemoveTag(version: string) {
-  return executeGitCommand(`tag -d ${version}`);
+async function gitRemoveTag(version: string, options?: GitCommandOptions) {
+  return executeGitCommand(`tag -d ${version}`, options);
 }
 
-async function gitPush(remote: string, entity: string) {
-  await executeGitCommand(`push ${remote} ${entity}`);
+async function gitPush(remote: string, entity: string, options?: GitCommandOptions) {
+  await executeGitCommand(`push ${remote} ${entity}`, options);
 }
 
 function escapeWhitespaces(message: string) {
