@@ -1,3 +1,5 @@
+import * as module from './git';
+
 import execa from 'execa';
 import path from 'path';
 
@@ -88,12 +90,12 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
     }
 
     if (push) {
-      await gitPush(remote, development, gitCommandOptions);
+      await module.gitPush(remote, development, gitCommandOptions);
       if (gitflow && merge) {
-        await gitPush(remote, release, gitCommandOptions);
+        await module.gitPush(remote, release, gitCommandOptions);
       }
       if (tag) {
-        await gitPush(remote, '--tags', gitCommandOptions);
+        await module.gitPush(remote, '--tags', gitCommandOptions);
       }
     }
   }

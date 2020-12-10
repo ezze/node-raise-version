@@ -2,9 +2,11 @@ import path from 'path';
 import moment from 'moment';
 import semver, { ReleaseType } from 'semver';
 
-import { updateGitRepositoryVersion } from '../../src/lib/git';
+import * as git from '../../src/lib/git';
+const { updateGitRepositoryVersion } = git;
 
 import {
+  mockModulePartially,
   createTestOutDir,
   createTextFile,
   createRestoreInitialWorkingDir,
@@ -169,16 +171,30 @@ describe('git', () => {
       });
 
       it(`gitflow ${release}: commit, push and revert back on push failure`, async() => {
-        // TODO: mock git push somehow
+        const gitPushErrorMessage = 'Some error during git push has occurred';
+        mockModulePartially('../../src/lib/git', () => {
+          return {
+            gitPush: jest.fn().mockImplementation(() => Promise.reject(gitPushErrorMessage))
+          };
+        });
+        const { updateGitRepositoryVersion } = await import('../../src/lib/git');
         const {
-          version, repoPath, remoteRepoPath, developBranch,
+          version, repoPath, developBranch,
           packageJsonPath, packageJsonContentsAltered, packageJsonDiff
         } = await initialize(`gitflow-${release}-commit-push-revert`, release, { remoteName, packageJson: true });
         if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
           return initializationError();
         }
+        const developCommitId = await getCommitId(repoPath, developBranch);
+        const releaseCommitId = await getCommitId(repoPath, releaseBranch);
         await createPackageJsonFile(repoPath, packageJsonContentsAltered);
-        await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, push: true });
+        await expect(updateGitRepositoryVersion(version, {
+          repoPath,
+          packageJsonPath,
+          push: true
+        })).rejects.toBe(gitPushErrorMessage);
+        expect(await getCommitId(repoPath, developCommitId)).toEqual(developCommitId);
+        expect(await getCommitId(repoPath, releaseCommitId)).toEqual(releaseCommitId);
       });
     });
   });
