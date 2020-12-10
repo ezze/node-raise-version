@@ -1,5 +1,6 @@
 import path from 'path';
 import moment from 'moment';
+import semver, { ReleaseType } from 'semver';
 
 import { updateGitRepositoryVersion } from '../../src/lib/git';
 
@@ -19,6 +20,7 @@ import {
   getCommitMessage,
   getCommitDiff,
   extractFileDiff,
+  getModifiedFiles,
   loadFixtureFile,
   applyTokens
 } from '../helpers';
@@ -28,6 +30,10 @@ describe('git', () => {
     const releaseBranch = 'master';
     const remoteName = 'origin';
     const initializationError = () => Promise.reject('Some data is not initialized');
+
+    beforeEach(() => {
+      jest.resetModules();
+    });
 
     const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
     afterEach(() => restoreInitialWorkingDir());
@@ -90,6 +96,29 @@ describe('git', () => {
         expect(extractFileDiff(diff, fileName)).toEqual([`+${fileContents}`]);
       });
 
+      it(`gitflow ${release}: commit explicitly and stash other stuff`, async() => {
+        const {
+          version, repoPath, developBranch,
+          packageJsonPath, packageJsonContentsAltered, packageJsonDiff
+        } = await initialize(`gitflow-${release}-commit-explicitly-stash`, release, { packageJson: true });
+        if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
+          return initializationError();
+        }
+        await createPackageJsonFile(repoPath, packageJsonContentsAltered);
+        const fileName = 'file.txt';
+        const fileContents1 = 'hello world';
+        const fileContents2 = 'goodbye';
+        await createTextFile(path.resolve(repoPath, fileName), fileContents1);
+        await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, all: true });
+        const nextVersion = semver.inc(version, release as ReleaseType);
+        await createPackageJsonFile(repoPath, { ...packageJsonContentsAltered, version: nextVersion });
+        await createTextFile(path.resolve(repoPath, fileName), fileContents2);
+        await updateGitRepositoryVersion(nextVersion as string, { repoPath, packageJsonPath });
+        const diff = await getLastCommitDiff(repoPath, developBranch);
+        expect(await getModifiedFiles(repoPath)).toEqual([fileName]);
+        expect(extractFileDiff(diff, fileName)).toEqual([]);
+      });
+
       it(`gitflow ${release}: commit and push to remote repository`, async() => {
         const {
           version, repoPath, remoteRepoPath, developBranch,
@@ -137,6 +166,19 @@ describe('git', () => {
         await createChangeLogFile(repoPath, changeLogContentsAltered);
         await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, changeLogPath });
         await checkRepoUpdate(repoPath, { version, releaseBranch, developBranch, packageJsonDiff, changeLogDiff });
+      });
+
+      it(`gitflow ${release}: commit, push and revert back on push failure`, async() => {
+        // TODO: mock git push somehow
+        const {
+          version, repoPath, remoteRepoPath, developBranch,
+          packageJsonPath, packageJsonContentsAltered, packageJsonDiff
+        } = await initialize(`gitflow-${release}-commit-push-revert`, release, { remoteName, packageJson: true });
+        if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
+          return initializationError();
+        }
+        await createPackageJsonFile(repoPath, packageJsonContentsAltered);
+        await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, push: true });
       });
     });
   });

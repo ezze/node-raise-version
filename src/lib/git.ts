@@ -1,18 +1,6 @@
 import execa from 'execa';
 import path from 'path';
 
-declare interface UpdateGitRepositoryVersionOptions extends GitOptionsSoft {
-  repoPath?: string;
-  packageJsonPath?: string;
-  changeLogPath?: string;
-  verbose?: boolean;
-}
-
-interface GitCommandOptions {
-  repoPath?: string;
-  verbose?: boolean;
-}
-
 async function updateGitRepositoryVersion(version: string, options: UpdateGitRepositoryVersionOptions): Promise<void> {
   const {
     repoPath = process.cwd(),
@@ -85,7 +73,7 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
     }
 
     if (gitflow && merge) {
-      const stashed = await gitStashAdd(gitCommandOptions);
+      const stashed = await gitStashSave(gitCommandOptions);
       await gitCheckout(release, gitCommandOptions);
       await gitMerge(development, `Version ${version}.`, gitCommandOptions);
       releaseCommited = true;
@@ -118,7 +106,7 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
     }
 
     const gitHardReset = async(branch: string) => {
-      const stashed = await gitStashAdd(gitCommandOptions);
+      const stashed = await gitStashSave(gitCommandOptions);
       const current = await gitCurrentBranch(gitCommandOptions);
       const checkout = current !== branch;
       if (checkout) {
@@ -184,63 +172,63 @@ async function executeGitCommand(gitCommand: string, options?: GitCommandOptions
   }
 }
 
-async function gitCurrentBranch(options?: GitCommandOptions) {
+async function gitCurrentBranch(options?: GitCommandOptions): Promise<string> {
   const branchCommand = await executeGitCommand('rev-parse --abbrev-ref HEAD', options);
   return branchCommand.stdout.toString();
 }
 
-async function gitDiffCached(options?: GitCommandOptions) {
+async function gitDiffCached(options?: GitCommandOptions): Promise<Array<string>> {
   const command = await executeGitCommand('diff --cached', options);
   return command.stdout ? command.stdout.split('\n') : [];
 }
 
-async function gitCheckout(branch: string, options?: GitCommandOptions) {
-  return executeGitCommand(`checkout ${branch}`, options);
+async function gitCheckout(branch: string, options?: GitCommandOptions): Promise<void> {
+  await executeGitCommand(`checkout ${branch}`, options);
 }
 
-async function gitStashAdd(options?: GitCommandOptions) {
+async function gitStashSave(options?: GitCommandOptions): Promise<boolean> {
   const beforeCount = (await gitStashList(options)).length;
   await executeGitCommand('stash', options);
   const afterCount = (await gitStashList(options)).length;
   return afterCount > beforeCount;
 }
 
-async function gitStashPop(options?: GitCommandOptions) {
+async function gitStashPop(options?: GitCommandOptions): Promise<boolean> {
   const beforeCount = (await gitStashList(options)).length;
   await executeGitCommand('stash pop', options);
   const afterCount = (await gitStashList(options)).length;
   return afterCount < beforeCount;
 }
 
-async function gitStashList(options?: GitCommandOptions) {
+async function gitStashList(options?: GitCommandOptions): Promise<Array<string>> {
   const command = await executeGitCommand('stash list', options);
   return command.stdout ? command.stdout.split('\n') : [];
 }
 
-async function gitAdd(filePaths: Array<string> | string, options?: GitCommandOptions) {
+async function gitAdd(filePaths: Array<string> | string, options?: GitCommandOptions): Promise<void> {
   if (!Array.isArray(filePaths)) {
     filePaths = [filePaths];
   }
-  return executeGitCommand(`add ${filePaths.map(filePath => escapeWhitespaces(filePath)).join(' ')}`, options);
+  await executeGitCommand(`add ${filePaths.map(filePath => escapeWhitespaces(filePath)).join(' ')}`, options);
 }
 
-async function gitCommit(message: string, options?: GitCommandOptions) {
-  return executeGitCommand(`commit -m ${escapeWhitespaces(message)}`, options);
+async function gitCommit(message: string, options?: GitCommandOptions): Promise<void> {
+  await executeGitCommand(`commit -m ${escapeWhitespaces(message)}`, options);
 }
 
-async function gitMerge(branch: string, message: string, options?: GitCommandOptions) {
-  return executeGitCommand(`merge --no-ff ${branch} -m ${escapeWhitespaces(message)}`, options);
+async function gitMerge(branch: string, message: string, options?: GitCommandOptions): Promise<void> {
+  await executeGitCommand(`merge --no-ff ${branch} -m ${escapeWhitespaces(message)}`, options);
 }
 
-async function gitTag(version: string, message?: string, options?: GitCommandOptions) {
-  return executeGitCommand(`tag -a ${version} -m ${escapeWhitespaces(message ? message : version)}`, options);
+async function gitTag(version: string, message?: string, options?: GitCommandOptions): Promise<void> {
+  await executeGitCommand(`tag -a ${version} -m ${escapeWhitespaces(message ? message : version)}`, options);
 }
 
-async function gitRemoveTag(version: string, options?: GitCommandOptions) {
-  return executeGitCommand(`tag -d ${version}`, options);
+async function gitRemoveTag(version: string, options?: GitCommandOptions): Promise<void> {
+  await executeGitCommand(`tag -d ${version}`, options);
 }
 
-async function gitPush(remote: string, entity: string, options?: GitCommandOptions) {
+async function gitPush(remote: string, entity: string, options?: GitCommandOptions): Promise<void> {
   await executeGitCommand(`push ${remote} ${entity}`, options);
 }
 
@@ -249,5 +237,18 @@ function escapeWhitespaces(message: string) {
 }
 
 export {
-  updateGitRepositoryVersion
+  updateGitRepositoryVersion,
+  executeGitCommand,
+  gitCurrentBranch,
+  gitDiffCached,
+  gitCheckout,
+  gitStashSave,
+  gitStashList,
+  gitStashPop,
+  gitAdd,
+  gitCommit,
+  gitMerge,
+  gitTag,
+  gitRemoveTag,
+  gitPush
 };

@@ -139,6 +139,14 @@ export function extractFileDiff(diff: Array<string>, fileName: string): Array<st
   return fileDiff;
 }
 
+export async function getModifiedFiles(repoPath: string): Promise<Array<string>> {
+  return (await exec('git ls-files --modified --exclude-standard', repoPath)).stdout.split('\n').filter(name => !!name);
+}
+
+export async function getUntrackedFiles(repoPath: string): Promise<Array<string>> {
+  return (await exec('git ls-files --others --exclude-standard', repoPath)).stdout.split('\n').filter(name => !!name);
+}
+
 export async function loadFixtureFile(
   relativeFilePath: string,
   tokens?: Record<string, string>

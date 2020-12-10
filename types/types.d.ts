@@ -88,3 +88,15 @@ declare interface RaiseVersionArgs extends ChangelogArgs, GitArgs {
   skipUpdate?: boolean;
   release?: string;
 }
+
+declare interface UpdateGitRepositoryVersionOptions extends GitOptionsSoft {
+  repoPath?: string;
+  packageJsonPath?: string;
+  changeLogPath?: string;
+  verbose?: boolean;
+}
+
+declare interface GitCommandOptions {
+  repoPath?: string;
+  verbose?: boolean;
+}
