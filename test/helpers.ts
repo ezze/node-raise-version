@@ -17,12 +17,17 @@ export function mockModulePartially(
   });
 }
 
-export async function createTestOutDir(name?: string, cwd = false): Promise<string> {
+export function getTestOurDirPath(name?: string): string {
   const relativeDirPath = getTestRelativeDirPath();
   let resultPath = path.resolve(rootTestOutDirPath, relativeDirPath);
   if (name) {
     resultPath = path.resolve(resultPath, name);
   }
+  return resultPath;
+}
+
+export async function createTestOutDir(name?: string, cwd = false): Promise<string> {
+  const resultPath = getTestOurDirPath(name);
   await fs.ensureDir(resultPath);
   if (cwd) {
     process.chdir(resultPath);

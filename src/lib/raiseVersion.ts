@@ -7,7 +7,7 @@ import { updateGitRepositoryVersion } from './git';
 export default async function raiseVersion(options: RaiseVersionConfigOptional = {}): Promise<string> {
   const packageJsonPath = await getPackageJsonPath();
   if (!packageJsonPath) {
-    return Promise.reject('Unable to locate "package.json" file');
+    return Promise.reject('Unable to locate package.json file');
   }
 
   const rcConfig = await getRaiseVerRcConfig();
@@ -38,13 +38,15 @@ export default async function raiseVersion(options: RaiseVersionConfigOptional =
     }
     catch (e) {
       console.error('Unable to update changelog, reverting changes back...');
-      await updatePackageJsonVersion(packageJsonPath, legacyVersion);
+      if (!skipUpdate) {
+        await updatePackageJsonVersion(packageJsonPath, legacyVersion);
+      }
       throw e;
     }
   }
 
   // Updating git repository
-  if (git) {
+  if (git.enabled) {
     const { path: changeLogPath } = changelog;
     await updateGitRepositoryVersion(version, {
       packageJsonPath,

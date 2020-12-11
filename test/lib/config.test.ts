@@ -77,7 +77,7 @@ describe('config', () => {
     });
 
     it('get default configuration when .raiseverrc file doesn\'t exist', async() => {
-      const outDirPath = await createTestOutDir('get-default-config', true);
+      await createTestOutDir('get-default-config', true);
       expect(await getRaiseVerRcConfig()).toEqual(defaultRaiseVerConfig);
     });
   });
