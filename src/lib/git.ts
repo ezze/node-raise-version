@@ -29,7 +29,7 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
   if (current !== development) {
     return Promise.reject(
       `Git repository can be updated only from development "${development}" branch, ` +
-      `currently on "${current}".`
+      `currently on "${current}"`
     );
   }
 

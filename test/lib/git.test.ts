@@ -31,6 +31,7 @@ describe('git', () => {
   describe('updateGitRepositoryVersion', () => {
     const releaseBranch = 'master';
     const remoteName = 'origin';
+    const release = 'major';
     const initializationError = () => Promise.reject('Some data is not initialized');
 
     const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
@@ -39,162 +40,160 @@ describe('git', () => {
       jest.resetModules();
     });
 
-    ['major', 'minor', 'patch'].forEach(release => {
-      it(`gitflow ${release}: don't commit from non-development branch`, async() => {
-        const { version, repoPath, developBranch, packageJsonPath } = await initialize(
-          `gitflow-${release}-no-commit-from-non-develop`,
-          release,
-          { packageJson: true }
-        );
-        if (!packageJsonPath) {
-          return initializationError();
-        }
-        await checkoutBranch(repoPath, releaseBranch);
-        const errorMessage = `Git repository can be updated only from development "${developBranch}" branch, ` +
-          `currently on "${releaseBranch}".`;
-        await expect(updateGitRepositoryVersion(version, { repoPath, packageJsonPath })).rejects.toBe(errorMessage);
-      });
+    it(`gitflow ${release}: don't commit from non-development branch`, async() => {
+      const { version, repoPath, developBranch, packageJsonPath } = await initialize(
+        `gitflow-${release}-no-commit-from-non-develop`,
+        release,
+        { packageJson: true }
+      );
+      if (!packageJsonPath) {
+        return initializationError();
+      }
+      await checkoutBranch(repoPath, releaseBranch);
+      const errorMessage = `Git repository can be updated only from development "${developBranch}" branch, ` +
+        `currently on "${releaseBranch}"`;
+      await expect(updateGitRepositoryVersion(version, { repoPath, packageJsonPath })).rejects.toBe(errorMessage);
+    });
 
-      it(`gitflow ${release}: nothing to commit`, async() => {
-        const { version, repoPath, packageJsonPath } = await initialize(
-          `gitflow-${release}-nothing-to-commit`,
-          release, { packageJson: true }
-        );
-        if (!packageJsonPath) {
-          return initializationError();
-        }
-        const errorMessage = 'There is nothing to commit';
-        await expect(updateGitRepositoryVersion(version, { repoPath, packageJsonPath })).rejects.toBe(errorMessage);
-      });
+    it(`gitflow ${release}: nothing to commit`, async() => {
+      const { version, repoPath, packageJsonPath } = await initialize(
+        `gitflow-${release}-nothing-to-commit`,
+        release, { packageJson: true }
+      );
+      if (!packageJsonPath) {
+        return initializationError();
+      }
+      const errorMessage = 'There is nothing to commit';
+      await expect(updateGitRepositoryVersion(version, { repoPath, packageJsonPath })).rejects.toBe(errorMessage);
+    });
 
-      it(`gitflow ${release}: commit`, async() => {
-        const {
-          version, repoPath, developBranch,
-          packageJsonPath, packageJsonContentsAltered, packageJsonDiff
-        } = await initialize(`gitflow-${release}-commit`, release, { packageJson: true });
-        if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
-          return initializationError();
-        }
-        await createPackageJsonFile(repoPath, packageJsonContentsAltered);
-        await updateGitRepositoryVersion(version, { repoPath, packageJsonPath });
-        await checkRepoUpdate(repoPath, { version, releaseBranch, developBranch, packageJsonDiff });
-      });
+    it(`gitflow ${release}: commit`, async() => {
+      const {
+        version, repoPath, developBranch,
+        packageJsonPath, packageJsonContentsAltered, packageJsonDiff
+      } = await initialize(`gitflow-${release}-commit`, release, { packageJson: true });
+      if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
+        return initializationError();
+      }
+      await createPackageJsonFile(repoPath, packageJsonContentsAltered);
+      await updateGitRepositoryVersion(version, { repoPath, packageJsonPath });
+      await checkRepoUpdate(repoPath, { version, releaseBranch, developBranch, packageJsonDiff });
+    });
 
-      it(`gitflow ${release}: commit all`, async() => {
-        const {
-          version, repoPath, developBranch,
-          packageJsonPath, packageJsonContentsAltered, packageJsonDiff
-        } = await initialize(`gitflow-${release}-commit-all`, release, { packageJson: true });
-        if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
-          return initializationError();
-        }
-        await createPackageJsonFile(repoPath, packageJsonContentsAltered);
-        const fileName = 'file.txt';
-        const fileContents = 'hello world';
-        await createTextFile(path.resolve(repoPath, fileName), fileContents);
-        await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, all: true });
-        const { diff } = await checkRepoUpdate(repoPath, { version, releaseBranch, developBranch, packageJsonDiff });
-        expect(extractFileDiff(diff, fileName)).toEqual([`+${fileContents}`]);
-      });
+    it(`gitflow ${release}: commit all`, async() => {
+      const {
+        version, repoPath, developBranch,
+        packageJsonPath, packageJsonContentsAltered, packageJsonDiff
+      } = await initialize(`gitflow-${release}-commit-all`, release, { packageJson: true });
+      if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
+        return initializationError();
+      }
+      await createPackageJsonFile(repoPath, packageJsonContentsAltered);
+      const fileName = 'file.txt';
+      const fileContents = 'hello world';
+      await createTextFile(path.resolve(repoPath, fileName), fileContents);
+      await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, all: true });
+      const { diff } = await checkRepoUpdate(repoPath, { version, releaseBranch, developBranch, packageJsonDiff });
+      expect(extractFileDiff(diff, fileName)).toEqual([`+${fileContents}`]);
+    });
 
-      it(`gitflow ${release}: commit explicitly and stash other stuff`, async() => {
-        const {
-          version, repoPath, developBranch,
-          packageJsonPath, packageJsonContentsAltered, packageJsonDiff
-        } = await initialize(`gitflow-${release}-commit-explicitly-stash`, release, { packageJson: true });
-        if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
-          return initializationError();
-        }
-        await createPackageJsonFile(repoPath, packageJsonContentsAltered);
-        const fileName = 'file.txt';
-        const fileContents1 = 'hello world';
-        const fileContents2 = 'goodbye';
-        await createTextFile(path.resolve(repoPath, fileName), fileContents1);
-        await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, all: true });
-        const nextVersion = semver.inc(version, release as ReleaseType);
-        await createPackageJsonFile(repoPath, { ...packageJsonContentsAltered, version: nextVersion });
-        await createTextFile(path.resolve(repoPath, fileName), fileContents2);
-        await updateGitRepositoryVersion(nextVersion as string, { repoPath, packageJsonPath });
-        const diff = await getLastCommitDiff(repoPath, developBranch);
-        expect(await getModifiedFiles(repoPath)).toEqual([fileName]);
-        expect(extractFileDiff(diff, fileName)).toEqual([]);
-      });
+    it(`gitflow ${release}: commit explicitly and stash other stuff`, async() => {
+      const {
+        version, repoPath, developBranch,
+        packageJsonPath, packageJsonContentsAltered, packageJsonDiff
+      } = await initialize(`gitflow-${release}-commit-explicitly-stash`, release, { packageJson: true });
+      if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
+        return initializationError();
+      }
+      await createPackageJsonFile(repoPath, packageJsonContentsAltered);
+      const fileName = 'file.txt';
+      const fileContents1 = 'hello world';
+      const fileContents2 = 'goodbye';
+      await createTextFile(path.resolve(repoPath, fileName), fileContents1);
+      await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, all: true });
+      const nextVersion = semver.inc(version, release as ReleaseType);
+      await createPackageJsonFile(repoPath, { ...packageJsonContentsAltered, version: nextVersion });
+      await createTextFile(path.resolve(repoPath, fileName), fileContents2);
+      await updateGitRepositoryVersion(nextVersion as string, { repoPath, packageJsonPath });
+      const diff = await getLastCommitDiff(repoPath, developBranch);
+      expect(await getModifiedFiles(repoPath)).toEqual([fileName]);
+      expect(extractFileDiff(diff, fileName)).toEqual([]);
+    });
 
-      it(`gitflow ${release}: commit and push to remote repository`, async() => {
-        const {
-          version, repoPath, remoteRepoPath, developBranch,
-          packageJsonPath, packageJsonContentsAltered, packageJsonDiff
-        } = await initialize(`gitflow-${release}-commit-push`, release, { remoteName, packageJson: true });
-        if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
-          return initializationError();
-        }
-        await createPackageJsonFile(repoPath, packageJsonContentsAltered);
-        await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, push: true });
-        await checkRepoUpdate(repoPath, { remoteRepoPath, version, releaseBranch, developBranch, packageJsonDiff });
-      });
+    it(`gitflow ${release}: commit and push to remote repository`, async() => {
+      const {
+        version, repoPath, remoteRepoPath, developBranch,
+        packageJsonPath, packageJsonContentsAltered, packageJsonDiff
+      } = await initialize(`gitflow-${release}-commit-push`, release, { remoteName, packageJson: true });
+      if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
+        return initializationError();
+      }
+      await createPackageJsonFile(repoPath, packageJsonContentsAltered);
+      await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, push: true });
+      await checkRepoUpdate(repoPath, { remoteRepoPath, version, releaseBranch, developBranch, packageJsonDiff });
+    });
 
-      it(`gitflow ${release}: don't commit, just push to remote repository`, async() => {
-        const {
-          repoPath, remoteRepoPath, developBranch,
-          packageJsonPath, packageJsonContents, packageJsonDiff
-        } = await initialize(`gitflow-${release}-no-commit-push`, release, { remoteName, packageJson: true });
-        if (!packageJsonPath || !packageJsonContents || !packageJsonDiff) {
-          return initializationError();
-        }
-        const { version } = packageJsonContents;
-        await updateGitRepositoryVersion(version, { repoPath, commit: false, push: true });
-        await checkRepoUpdate(repoPath, {
-          remoteRepoPath, version, releaseBranch, developBranch, packageJsonDiff, commit: false
-        });
+    it(`gitflow ${release}: don't commit, just push to remote repository`, async() => {
+      const {
+        repoPath, remoteRepoPath, developBranch,
+        packageJsonPath, packageJsonContents, packageJsonDiff
+      } = await initialize(`gitflow-${release}-no-commit-push`, release, { remoteName, packageJson: true });
+      if (!packageJsonPath || !packageJsonContents || !packageJsonDiff) {
+        return initializationError();
+      }
+      const { version } = packageJsonContents;
+      await updateGitRepositoryVersion(version, { repoPath, commit: false, push: true });
+      await checkRepoUpdate(repoPath, {
+        remoteRepoPath, version, releaseBranch, developBranch, packageJsonDiff, commit: false
       });
+    });
 
-      it(`gitflow ${release}: commit with changelog`, async() => {
-        const {
-          version, repoPath, developBranch,
-          packageJsonPath, packageJsonContentsAltered, packageJsonDiff,
-          changeLogPath, changeLogContentsAltered, changeLogDiff
-        } = await initialize(
-          `gitflow-${release}-commit-changelog`,
-          release, { packageJson: true, changeLog: true }
-        );
-        if (
-          !packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff ||
-          !changeLogPath || !changeLogContentsAltered || !changeLogDiff
-        ) {
-          return initializationError();
-        }
-        await createPackageJsonFile(repoPath, packageJsonContentsAltered);
-        await createChangeLogFile(repoPath, changeLogContentsAltered);
-        await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, changeLogPath });
-        await checkRepoUpdate(repoPath, { version, releaseBranch, developBranch, packageJsonDiff, changeLogDiff });
-      });
+    it(`gitflow ${release}: commit with changelog`, async() => {
+      const {
+        version, repoPath, developBranch,
+        packageJsonPath, packageJsonContentsAltered, packageJsonDiff,
+        changeLogPath, changeLogContentsAltered, changeLogDiff
+      } = await initialize(
+        `gitflow-${release}-commit-changelog`,
+        release, { packageJson: true, changeLog: true }
+      );
+      if (
+        !packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff ||
+        !changeLogPath || !changeLogContentsAltered || !changeLogDiff
+      ) {
+        return initializationError();
+      }
+      await createPackageJsonFile(repoPath, packageJsonContentsAltered);
+      await createChangeLogFile(repoPath, changeLogContentsAltered);
+      await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, changeLogPath });
+      await checkRepoUpdate(repoPath, { version, releaseBranch, developBranch, packageJsonDiff, changeLogDiff });
+    });
 
-      it(`gitflow ${release}: commit, push and revert back on push failure`, async() => {
-        const gitPushErrorMessage = 'Some error during git push has occurred';
-        mockModulePartially('../../src/lib/git', () => {
-          return {
-            gitPush: jest.fn().mockImplementation(() => Promise.reject(gitPushErrorMessage))
-          };
-        });
-        const { updateGitRepositoryVersion } = await import('../../src/lib/git');
-        const {
-          version, repoPath, developBranch,
-          packageJsonPath, packageJsonContentsAltered, packageJsonDiff
-        } = await initialize(`gitflow-${release}-commit-push-revert`, release, { remoteName, packageJson: true });
-        if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
-          return initializationError();
-        }
-        const developCommitId = await getCommitId(repoPath, developBranch);
-        const releaseCommitId = await getCommitId(repoPath, releaseBranch);
-        await createPackageJsonFile(repoPath, packageJsonContentsAltered);
-        await expect(updateGitRepositoryVersion(version, {
-          repoPath,
-          packageJsonPath,
-          push: true
-        })).rejects.toBe(gitPushErrorMessage);
-        expect(await getCommitId(repoPath, developCommitId)).toEqual(developCommitId);
-        expect(await getCommitId(repoPath, releaseCommitId)).toEqual(releaseCommitId);
+    it(`gitflow ${release}: commit, push and revert back on push failure`, async() => {
+      const gitPushErrorMessage = 'Some error during git push has occurred';
+      mockModulePartially('../../src/lib/git', () => {
+        return {
+          gitPush: jest.fn().mockImplementation(() => Promise.reject(gitPushErrorMessage))
+        };
       });
+      const { updateGitRepositoryVersion } = await import('../../src/lib/git');
+      const {
+        version, repoPath, developBranch,
+        packageJsonPath, packageJsonContentsAltered, packageJsonDiff
+      } = await initialize(`gitflow-${release}-commit-push-revert`, release, { remoteName, packageJson: true });
+      if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
+        return initializationError();
+      }
+      const developCommitId = await getCommitId(repoPath, developBranch);
+      const releaseCommitId = await getCommitId(repoPath, releaseBranch);
+      await createPackageJsonFile(repoPath, packageJsonContentsAltered);
+      await expect(updateGitRepositoryVersion(version, {
+        repoPath,
+        packageJsonPath,
+        push: true
+      })).rejects.toBe(gitPushErrorMessage);
+      expect(await getCommitId(repoPath, developCommitId)).toEqual(developCommitId);
+      expect(await getCommitId(repoPath, releaseCommitId)).toEqual(releaseCommitId);
     });
   });
 });
