@@ -3,7 +3,7 @@ import moment from 'moment';
 import semver, { ReleaseType } from 'semver';
 
 import * as git from '../../src/lib/git';
-const { updateGitRepositoryVersion } = git;
+const { updateGitRepositoryVersion, executeGitCommand } = git;
 
 import {
   mockModulePartially,
@@ -28,6 +28,21 @@ import {
 } from '../helpers';
 
 describe('git', () => {
+  describe('executeGitCommand', () => {
+    it('execute successfully', async() => {
+      const outDirPath = await createTestOutDir('execute');
+      const { repoPath } = await createRepositories(outDirPath);
+      const command = await executeGitCommand('status', { repoPath });
+      expect(command.stdout).toEqual('On branch master\nnothing to commit, working tree clean');
+    });
+
+    it('execute with failure', async() => {
+      const outDirPath = await createTestOutDir('execute-failure');
+      const errorMessage = 'Unable to execute command: git unknown';
+      await expect(executeGitCommand('unknown', { repoPath: outDirPath })).rejects.toBe(errorMessage);
+    });
+  });
+
   describe('updateGitRepositoryVersion', () => {
     const releaseBranch = 'master';
     const remoteName = 'origin';
@@ -35,9 +50,12 @@ describe('git', () => {
     const initializationError = () => Promise.reject('Some data is not initialized');
 
     const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
+    beforeEach(() => {
+      jest.resetModules();
+    });
+
     afterEach(() => {
       restoreInitialWorkingDir();
-      jest.resetModules();
     });
 
     it(`gitflow ${release}: don't commit from non-development branch`, async() => {
@@ -169,7 +187,12 @@ describe('git', () => {
       await checkRepoUpdate(repoPath, { version, releaseBranch, developBranch, packageJsonDiff, changeLogDiff });
     });
 
-    it(`gitflow ${release}: commit, push and revert back on push failure`, async() => {
+    const revertBack = async(dirName: string, options: {
+      release: string;
+      centralized?: boolean;
+    }) => {
+      const { release, centralized = false } = options;
+
       const gitPushErrorMessage = 'Some error during git push has occurred';
       mockModulePartially('../../src/lib/git', () => {
         return {
@@ -177,23 +200,63 @@ describe('git', () => {
         };
       });
       const { updateGitRepositoryVersion } = await import('../../src/lib/git');
+
+      const initOptions = { remoteName, packageJson: true };
+      if (centralized) {
+        Object.assign(initOptions, { developBranch: releaseBranch });
+      }
+
       const {
         version, repoPath, developBranch,
         packageJsonPath, packageJsonContentsAltered, packageJsonDiff
-      } = await initialize(`gitflow-${release}-commit-push-revert`, release, { remoteName, packageJson: true });
+      } = await initialize(dirName, release, initOptions);
       if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
         return initializationError();
       }
+
       const developCommitId = await getCommitId(repoPath, developBranch);
       const releaseCommitId = await getCommitId(repoPath, releaseBranch);
       await createPackageJsonFile(repoPath, packageJsonContentsAltered);
       await expect(updateGitRepositoryVersion(version, {
         repoPath,
         packageJsonPath,
+        development: developBranch,
         push: true
       })).rejects.toBe(gitPushErrorMessage);
       expect(await getCommitId(repoPath, developCommitId)).toEqual(developCommitId);
-      expect(await getCommitId(repoPath, releaseCommitId)).toEqual(releaseCommitId);
+      if (!centralized) {
+        expect(await getCommitId(repoPath, releaseCommitId)).toEqual(releaseCommitId);
+      }
+    };
+
+    it(`gitflow ${release}: commit, push and revert back on push failure`, async() => {
+      await revertBack(`gitflow-${release}-commit-push-revert`, { release });
+    });
+
+    it(`centralized ${release}: commit, push and revert back on push failure`, async() => {
+      await revertBack(`centralized-${release}-commit-push-revert`, { release, centralized: true });
+    });
+
+    it(`centralized ${release}: commit and push to remote repository`, async() => {
+      const {
+        version, repoPath, remoteRepoPath, developBranch,
+        packageJsonPath, packageJsonContentsAltered, packageJsonDiff
+      } = await initialize(`centralized-${release}-commit-push`, release, {
+        remoteName,
+        developBranch: releaseBranch,
+        packageJson: true
+      });
+      if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
+        return initializationError();
+      }
+      await createPackageJsonFile(repoPath, packageJsonContentsAltered);
+      await updateGitRepositoryVersion(version, {
+        repoPath,
+        packageJsonPath,
+        development: developBranch,
+        push: true
+      });
+      await checkRepoUpdate(repoPath, { remoteRepoPath, version, releaseBranch, developBranch, packageJsonDiff });
     });
   });
 });
@@ -203,6 +266,7 @@ async function initialize(dirName: string, release: string, options?: {
   developBranch?: string;
   packageJson?: boolean;
   changeLog?: boolean;
+  centralized?: boolean;
 }): Promise<{
   version: string;
   repoPath: string;
@@ -297,7 +361,7 @@ async function extractGitFixtureData(options: {
   };
 }
 
-async function createRepositories(outDirPath: string, options: {
+async function createRepositories(outDirPath: string, options?: {
   remoteName?: string;
   packageJsonContents?: Record<string, any>;
   changeLogContents?: Array<string>;
@@ -308,7 +372,7 @@ async function createRepositories(outDirPath: string, options: {
   packageJsonPath?: string;
   changeLogPath?: string;
 }> {
-  const { remoteName, packageJsonContents, changeLogContents, developBranch } = options;
+  const { remoteName, packageJsonContents, changeLogContents, developBranch } = options || {};
 
   const repoPath = await createRepository(outDirPath, { initialCommit: true });
   let remoteRepoPath;
@@ -317,7 +381,7 @@ async function createRepositories(outDirPath: string, options: {
     await addRemoteRepository(repoPath, remoteRepoPath, remoteName);
   }
 
-  if (developBranch) {
+  if (developBranch && developBranch !== 'master') {
     await createBranch(repoPath, developBranch);
   }
 
@@ -376,15 +440,22 @@ async function checkCommits(repoPath: string, options: {
   const { remoteRepoPath, version, releaseBranch, developBranch, commit = true, tag = true } = options;
 
   if (commit) {
-    await checkDevelopCommitMessage(repoPath, developBranch, version);
-    await checkReleaseCommitMessage(repoPath, releaseBranch, version);
+    if (releaseBranch === developBranch) {
+      await checkDevelopCommitMessage(repoPath, developBranch, version, true);
+    }
+    else {
+      await checkDevelopCommitMessage(repoPath, developBranch, version);
+      await checkReleaseCommitMessage(repoPath, releaseBranch, version);
+    }
   }
 
-  const developCommitId = await getCommitId(repoPath, developBranch);
   const releaseCommitId = await getCommitId(repoPath, releaseBranch);
-  const releaseParent2CommitId = await getCommitId(repoPath, getCommitRef(releaseBranch, ['^2']));
+  const developCommitId = await getCommitId(repoPath, developBranch);
+  if (releaseBranch !== developBranch) {
+    const releaseParent2CommitId = await getCommitId(repoPath, getCommitRef(releaseBranch, ['^2']));
+    expect(releaseParent2CommitId).toEqual(developCommitId);
+  }
 
-  expect(releaseParent2CommitId).toEqual(developCommitId);
   if (tag) {
     const tagCommitId = await getCommitId(repoPath, version);
     expect(tagCommitId).toEqual(releaseCommitId);
@@ -392,9 +463,11 @@ async function checkCommits(repoPath: string, options: {
 
   if (remoteRepoPath) {
     const remoteDevelopCommitId = await getCommitId(repoPath, `origin/${developBranch}`);
-    const remoteReleaseCommitId = await getCommitId(repoPath, `origin/${releaseBranch}`);
     expect(remoteDevelopCommitId).toEqual(developCommitId);
-    expect(remoteReleaseCommitId).toEqual(releaseCommitId);
+    if (releaseBranch !== developBranch) {
+      const remoteReleaseCommitId = await getCommitId(repoPath, `origin/${releaseBranch}`);
+      expect(remoteReleaseCommitId).toEqual(releaseCommitId);
+    }
   }
 }
 
@@ -402,8 +475,9 @@ async function checkCommitMessage(repoPath: string, branch: string, message: str
   expect(await getCommitMessage(repoPath, branch)).toBe(message);
 }
 
-async function checkDevelopCommitMessage(repoPath: string, branch: string, version: string) {
-  await checkCommitMessage(repoPath, getCommitRef(branch), `Raise version: ${version}.`);
+async function checkDevelopCommitMessage(repoPath: string, branch: string, version: string, centralized = false) {
+  const message = centralized ? `Version ${version}.` : `Raise version: ${version}.`;
+  await checkCommitMessage(repoPath, getCommitRef(branch), message);
 }
 
 async function checkReleaseCommitMessage(repoPath: string, branch: string, version: string) {

@@ -26,7 +26,7 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
   const gitCommandOptions: GitCommandOptions = { repoPath, verbose };
 
   const current = await gitCurrentBranch(gitCommandOptions);
-  if (current !== development) {
+  if (development !== release && current !== development) {
     return Promise.reject(
       `Git repository can be updated only from development "${development}" branch, ` +
       `currently on "${current}"`
@@ -126,7 +126,7 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
     if (tagged) {
       await gitRemoveTag(version, gitCommandOptions);
     }
-    if (releaseCommited) {
+    if (gitflow && releaseCommited) {
       await gitHardReset(release);
     }
     if (developmentCommited) {

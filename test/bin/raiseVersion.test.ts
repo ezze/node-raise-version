@@ -7,28 +7,30 @@ import {
   loadFixtureFile
 } from '../helpers';
 
-jest.mock('../../src/lib/initVersion');
-import initVersion from '../../src/lib/initVersion';
-
 describe('raiseVersion', () => {
   let defaultRaiseVerConfig: RaiseVersionConfig;
   beforeAll(async() => {
     defaultRaiseVerConfig = await loadFixtureFile('.raiseverrc-default.json');
   });
 
+  beforeEach(() => {
+    jest.resetModules();
+  });
+
   const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
   afterEach(() => {
     restoreInitialWorkingDir();
     jest.clearAllMocks();
-    jest.resetModules();
   });
 
   it('initVersion is called', async() => {
     await createTestOutDir('init', true);
     await mockArgv(['init'], async() => {
+      jest.doMock('../../src/lib/initVersion');
+      const { default: initVersion } = await import('../../src/lib/initVersion');
       await mockCommandRun();
-      expect(mocked(initVersion).mock.calls.length).toBe(1);
-      expect(mocked(initVersion).mock.calls[0]).toEqual([]);
+      expect(initVersion).toHaveBeenCalledTimes(1);
+      expect(initVersion).toHaveBeenCalledWith();
     });
   });
 
@@ -36,10 +38,10 @@ describe('raiseVersion', () => {
     await createTestOutDir('raise-default', true);
     await mockArgv(['major'], async() => {
       jest.doMock('../../src/lib/raiseVersion');
-      const raiseVersion = (await import('../../src/lib/raiseVersion')).default;
+      const { default: raiseVersion } = await import('../../src/lib/raiseVersion');
       await mockCommandRun();
-      expect(mocked(raiseVersion).mock.calls.length).toBe(1);
-      expect(mocked(raiseVersion).mock.calls[0][0]).toEqual({
+      expect(raiseVersion).toHaveBeenCalledTimes(1);
+      expect(raiseVersion).toHaveBeenCalledWith({
         skipUpdate: undefined,
         release: 'major',
         ...defaultRaiseVerConfig
@@ -51,10 +53,10 @@ describe('raiseVersion', () => {
     await createTestOutDir('raise-git-push', true);
     await mockArgv(['major', '--git-push'], async() => {
       jest.doMock('../../src/lib/raiseVersion');
-      const raiseVersion = (await import('../../src/lib/raiseVersion')).default;
+      const { default: raiseVersion } = await import('../../src/lib/raiseVersion');
       await mockCommandRun();
-      expect(mocked(raiseVersion).mock.calls.length).toBe(1);
-      expect(mocked(raiseVersion).mock.calls[0][0]).toEqual({
+      expect(raiseVersion).toHaveBeenCalledTimes(1);
+      expect(raiseVersion).toHaveBeenCalledWith({
         skipUpdate: undefined,
         release: 'major',
         changelog: defaultRaiseVerConfig.changelog,
