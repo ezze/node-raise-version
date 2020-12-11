@@ -82,7 +82,7 @@ describe('raiseVersion', () => {
   it('raiseVersion runtime error', async() => {
     await createTestOutDir('raise-runtime-error', true);
     await mockArgv(['major'], async() => {
-      const fail = await mockFail();
+      const fail = await mockFail(); // eslint-disable-line @typescript-eslint/no-unused-vars
       const raiseVersion = await mockRaiseVersionFn(async() => {
         return Promise.reject('Some error');
       });

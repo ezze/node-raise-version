@@ -10,7 +10,6 @@ import {
 
 import {
   createRestoreInitialWorkingDir,
-  getTestOurDirPath,
   createTestOutDir,
   createRaiseVerRc,
   loadFixtureFile,

@@ -1,6 +1,5 @@
 import path from 'path';
 import moment from 'moment';
-import semver, { ReleaseType } from 'semver';
 
 import * as git from '../../src/lib/git';
 const { updateGitRepositoryVersion, executeGitCommand } = git;
