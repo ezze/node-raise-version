@@ -2,15 +2,10 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import { raiseVerRcName, defaultRaiseVerConfig } from './constants';
-import { getPackageJsonPath } from './package';
 import { fileExists } from './utils';
 
-export async function detectRaiseVerRcPath(workingDirPath = process.cwd()): Promise<string | null> {
-  const packageJsonPath = await getPackageJsonPath(workingDirPath);
-  if (!packageJsonPath) {
-    return null;
-  }
-  return path.resolve(path.dirname(packageJsonPath), raiseVerRcName);
+export async function getRaiseVerRcPath(workingDirPath = process.cwd()): Promise<string | null> {
+  return path.resolve(workingDirPath, raiseVerRcName);
 }
 
 export async function readRaiseVerRc(raiseVerRcPath: string): Promise<any> {
@@ -28,7 +23,7 @@ export async function writeRaiseVerRc(raiseVerRcPath: string, config: RaiseVersi
 }
 
 export async function getRaiseVerRcConfig(workingDirPath?: string): Promise<RaiseVersionConfig> {
-  const raiseVerRcPath = await detectRaiseVerRcPath(workingDirPath);
+  const raiseVerRcPath = await getRaiseVerRcPath(workingDirPath);
   if (raiseVerRcPath && await fileExists(raiseVerRcPath)) {
     return readRaiseVerRc(raiseVerRcPath);
   }

@@ -1,22 +1,19 @@
-#!/usr/bin/env node
 import yargs from 'yargs';
 
-import init from './commands/init';
-import raise from './commands/raise';
+import * as init from './commands/init';
+import * as raise from './commands/raise';
 
-(async() => {
+import fail from './fail';
+
+async function raiseVersion(): Promise<void> {
   yargs
     .command('init', 'Create default .raiseverrc configuration file', init.builder, init.handler)
     .command('* [release] [options]', 'Raise version', await raise.createBuilder(), raise.handler)
     .wrap(null)
     .strict(true)
-    .fail((message, error) => {
-      if (message) {
-        console.error(message);
-      }
-      console.error(error);
-      process.exit(1);
-    })
+    .fail(fail)
     .demandCommand()
     .parse(process.argv.slice(2));
-})();
+}
+
+export default raiseVersion;

@@ -12,7 +12,8 @@ if (process.env.COVERAGE) {
   Object.assign(config, {
     collectCoverage: true,
     collectCoverageFrom: [
-      'src/**/*.ts'
+      'src/**/*.ts',
+      '!src/bin/cli.ts'
     ],
     coverageDirectory: '<rootDir>/coverage'
   });

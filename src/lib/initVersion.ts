@@ -1,9 +1,9 @@
 import { defaultRaiseVerConfig } from './constants';
-import { detectRaiseVerRcPath, readRaiseVerRc, writeRaiseVerRc } from './config';
+import { getRaiseVerRcPath, readRaiseVerRc, writeRaiseVerRc } from './config';
 import { fileExists } from './utils';
 
 export async function initVersion(): Promise<RaiseVersionConfig> {
-  const raiseVerRcPath = await detectRaiseVerRcPath();
+  const raiseVerRcPath = await getRaiseVerRcPath();
   if (raiseVerRcPath && await fileExists(raiseVerRcPath)) {
     console.warn(`File "${raiseVerRcPath}" already exists.`);
     return readRaiseVerRc(raiseVerRcPath);

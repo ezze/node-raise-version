@@ -112,4 +112,4 @@ const handler = async(args: Arguments): Promise<void> => {
   await raiseVersion(config);
 };
 
-export default { createBuilder, handler };
+export { createBuilder, handler };

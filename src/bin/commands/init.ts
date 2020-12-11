@@ -7,4 +7,4 @@ const handler = async(): Promise<void> => {
   await initVersion();
 };
 
-export default { builder, handler };
+export { builder, handler };

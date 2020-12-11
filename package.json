@@ -4,17 +4,17 @@
   "description": "Update and commit package version for Gitflow workflow",
   "main": "lib/raiseVersion.js",
   "bin": {
-    "raisever": "bin/raiseVersion.js",
-    "raise-version": "bin/raiseVersion.js"
+    "raisever": "bin/cli.js",
+    "raise-version": "bin/cli.js"
   },
   "types": "lib/raiseVersion.d.ts",
   "typings": "lib/raiseVersion.d.ts",
   "scripts": {
     "prepublishOnly": "npm run lint && npm run build",
-    "build": "npm run clean && tsc -p tsconfig.json && chmod +x bin/raiseVersion.js",
+    "build": "npm run clean && tsc -p tsconfig.json && chmod +x bin/cli.js",
     "watch": "npm run clean && tsc -p tsconfig.json --watch",
     "clean": "rimraf bin lib",
-    "raise": "src/bin/raiseVersion.ts",
+    "raise": "src/bin/cli.ts",
     "test": "jest --config jest.config.ts --runInBand",
     "test:coverage": "rimraf coverage && cross-env COVERAGE=yes jest --config jest.config.ts --runInBand",
     "test:ci": "rimraf coverage reports && cross-env COVERAGE=yes JEST_JUNIT_OUTPUT_DIR=reports/junit jest --config jest.config.ts --ci --reporters=default --reporters=jest-junit --runInBand",
@@ -51,6 +51,7 @@
     "eslint-config-ezze-ts": "^0.10.1",
     "jest": "^26.6.3",
     "jest-junit": "^12.0.0",
+    "mock-argv": "^1.1.9",
     "rimraf": "^3.0.2",
     "ts-jest": "^26.4.4",
     "ts-node": "^9.1.1",
