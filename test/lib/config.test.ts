@@ -10,6 +10,7 @@ import {
 
 import {
   createRestoreInitialWorkingDir,
+  getTestOurDirPath,
   createTestOutDir,
   createRaiseVerRc,
   loadFixtureFile,
@@ -33,9 +34,14 @@ describe('config', () => {
   afterEach(() => restoreInitialWorkingDir());
 
   describe('getRaiseVerRcPath', () => {
-    it('get path to .raiseverrc file', async() => {
-      const outDirPath = await createTestOutDir('detect-rc-path', true);
+    it('get path to .raiseverrc file in current working directory', async() => {
+      const outDirPath = await createTestOutDir('detect-rc-path-in-working-dir', true);
       expect(await getRaiseVerRcPath()).toBe(path.resolve(outDirPath, raiseVerRcName));
+    });
+
+    it('get path to .raiseverrc file in specific directory', async() => {
+      const outDirPath = await createTestOutDir('detect-rc-path-in-specific-dir');
+      expect(await getRaiseVerRcPath(outDirPath)).toBe(path.resolve(outDirPath, raiseVerRcName));
     });
   });
 

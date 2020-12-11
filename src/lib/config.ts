@@ -24,7 +24,7 @@ export async function writeRaiseVerRc(raiseVerRcPath: string, config: RaiseVersi
 
 export async function getRaiseVerRcConfig(workingDirPath?: string): Promise<RaiseVersionConfig> {
   const raiseVerRcPath = await getRaiseVerRcPath(workingDirPath);
-  if (raiseVerRcPath && await fileExists(raiseVerRcPath)) {
+  if (await fileExists(raiseVerRcPath)) {
     return readRaiseVerRc(raiseVerRcPath);
   }
   return defaultRaiseVerConfig;
