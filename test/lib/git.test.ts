@@ -116,23 +116,22 @@ describe('git', () => {
     });
 
     it(`gitflow ${release}: commit explicitly and stash other stuff`, async() => {
+      const fileName = 'file.txt';
+      const fileContents = 'hello world';
       const {
         version, repoPath, developBranch,
         packageJsonPath, packageJsonContentsAltered, packageJsonDiff
-      } = await initialize(`gitflow-${release}-commit-explicitly-stash`, release, { packageJson: true });
+      } = await initialize(`gitflow-${release}-commit-explicitly-stash`, release, {
+        packageJson: true,
+        fileName,
+        fileContents
+      });
       if (!packageJsonPath || !packageJsonContentsAltered || !packageJsonDiff) {
         return initializationError();
       }
       await createPackageJsonFile(repoPath, packageJsonContentsAltered);
-      const fileName = 'file.txt';
-      const fileContents1 = 'hello world';
-      const fileContents2 = 'goodbye';
-      await createTextFile(path.resolve(repoPath, fileName), fileContents1);
-      await updateGitRepositoryVersion(version, { repoPath, packageJsonPath, all: true });
-      const nextVersion = semver.inc(version, release as ReleaseType);
-      await createPackageJsonFile(repoPath, { ...packageJsonContentsAltered, version: nextVersion });
-      await createTextFile(path.resolve(repoPath, fileName), fileContents2);
-      await updateGitRepositoryVersion(nextVersion as string, { repoPath, packageJsonPath });
+      await createTextFile(path.resolve(repoPath, fileName), 'goodbye');
+      await updateGitRepositoryVersion(version, { repoPath, packageJsonPath });
       const diff = await getLastCommitDiff(repoPath, developBranch);
       expect(await getModifiedFiles(repoPath)).toEqual([fileName]);
       expect(extractFileDiff(diff, fileName)).toEqual([]);
@@ -189,9 +188,10 @@ describe('git', () => {
 
     const revertBack = async(dirName: string, options: {
       release: string;
+      stash?: boolean;
       centralized?: boolean;
     }) => {
-      const { release, centralized = false } = options;
+      const { release, stash = false, centralized = false } = options;
 
       const gitPushErrorMessage = 'Some error during git push has occurred';
       mockModulePartially('../../src/lib/git', () => {
@@ -202,6 +202,10 @@ describe('git', () => {
       const { updateGitRepositoryVersion } = await import('../../src/lib/git');
 
       const initOptions = { remoteName, packageJson: true };
+      const fileName = 'file.txt';
+      if (stash) {
+        Object.assign(initOptions, { fileName, fileContents: 'hello world' });
+      }
       if (centralized) {
         Object.assign(initOptions, { developBranch: releaseBranch });
       }
@@ -217,6 +221,9 @@ describe('git', () => {
       const developCommitId = await getCommitId(repoPath, developBranch);
       const releaseCommitId = await getCommitId(repoPath, releaseBranch);
       await createPackageJsonFile(repoPath, packageJsonContentsAltered);
+      if (stash) {
+        await createTextFile(path.resolve(repoPath, fileName), 'goodbye');
+      }
       await expect(updateGitRepositoryVersion(version, {
         repoPath,
         packageJsonPath,
@@ -233,8 +240,8 @@ describe('git', () => {
       await revertBack(`gitflow-${release}-commit-push-revert`, { release });
     });
 
-    it(`centralized ${release}: commit, push and revert back on push failure`, async() => {
-      await revertBack(`centralized-${release}-commit-push-revert`, { release, centralized: true });
+    it(`gitflow ${release}: commit, stash and revert back on push failure`, async() => {
+      await revertBack(`gitflow-${release}-commit-stash-push-revert`, { release, stash: true });
     });
 
     it(`centralized ${release}: commit and push to remote repository`, async() => {
@@ -258,15 +265,20 @@ describe('git', () => {
       });
       await checkRepoUpdate(repoPath, { remoteRepoPath, version, releaseBranch, developBranch, packageJsonDiff });
     });
+
+    it(`centralized ${release}: commit, push and revert back on push failure`, async() => {
+      await revertBack(`centralized-${release}-commit-push-revert`, { release, centralized: true });
+    });
   });
 });
 
 async function initialize(dirName: string, release: string, options?: {
   remoteName?: string;
   developBranch?: string;
+  fileName?: string;
+  fileContents?: string;
   packageJson?: boolean;
   changeLog?: boolean;
-  centralized?: boolean;
 }): Promise<{
   version: string;
   repoPath: string;
@@ -284,6 +296,8 @@ async function initialize(dirName: string, release: string, options?: {
   const {
     remoteName,
     developBranch = 'develop',
+    fileName,
+    fileContents,
     packageJson = false,
     changeLog = false
   } = options || {};
@@ -298,7 +312,7 @@ async function initialize(dirName: string, release: string, options?: {
   } = await extractGitFixtureData({ release });
 
   const outDirPath = await createTestOutDir(dirName, true);
-  const createOptions = { remoteName, developBranch };
+  const createOptions = { remoteName, developBranch, fileName, fileContents };
   if (packageJson) {
     Object.assign(createOptions, { packageJsonContents });
   }
@@ -363,18 +377,20 @@ async function extractGitFixtureData(options: {
 
 async function createRepositories(outDirPath: string, options?: {
   remoteName?: string;
+  developBranch?: string;
+  fileName?: string;
+  fileContents?: string;
   packageJsonContents?: Record<string, any>;
   changeLogContents?: Array<string>;
-  developBranch?: string;
 }): Promise<{
   repoPath: string;
   remoteRepoPath?: string;
   packageJsonPath?: string;
   changeLogPath?: string;
 }> {
-  const { remoteName, packageJsonContents, changeLogContents, developBranch } = options || {};
+  const { remoteName, developBranch, fileName, fileContents, packageJsonContents, changeLogContents } = options || {};
 
-  const repoPath = await createRepository(outDirPath, { initialCommit: true });
+  const repoPath = await createRepository(outDirPath, { fileName, fileContents, initialCommit: true });
   let remoteRepoPath;
   if (remoteName) {
     remoteRepoPath = await createRepository(outDirPath, { bare: true });

@@ -76,16 +76,20 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
 
     if (gitflow && merge) {
       const stashed = await gitStashSave(gitCommandOptions);
-      await gitCheckout(release, gitCommandOptions);
-      await gitMerge(development, `Version ${version}.`, gitCommandOptions);
-      releaseCommited = true;
-      if (tag) {
-        await gitTag(version, version, gitCommandOptions);
-        tagged = true;
+      try {
+        await gitCheckout(release, gitCommandOptions);
+        await gitMerge(development, `Version ${version}.`, gitCommandOptions);
+        releaseCommited = true;
+        if (tag) {
+          await gitTag(version, version, gitCommandOptions);
+          tagged = true;
+        }
       }
-      await gitCheckout(development, gitCommandOptions);
-      if (stashed) {
-        await gitStashPop(gitCommandOptions);
+      finally {
+        await gitCheckout(development, gitCommandOptions);
+        if (stashed) {
+          await gitStashPop(gitCommandOptions);
+        }
       }
     }
 
@@ -108,18 +112,22 @@ async function updateGitRepositoryVersion(version: string, options: UpdateGitRep
     }
 
     const gitHardReset = async(branch: string) => {
-      const stashed = await gitStashSave(gitCommandOptions);
       const current = await gitCurrentBranch(gitCommandOptions);
       const checkout = current !== branch;
-      if (checkout) {
-        await gitCheckout(branch, gitCommandOptions);
+      const stashed = await gitStashSave(gitCommandOptions);
+      try {
+        if (checkout) {
+          await gitCheckout(branch, gitCommandOptions);
+        }
+        await executeGitCommand('reset --hard HEAD~1', gitCommandOptions);
       }
-      await executeGitCommand('reset --hard HEAD~1', gitCommandOptions);
-      if (checkout) {
-        await gitCheckout(current, gitCommandOptions);
-      }
-      if (stashed) {
-        await gitStashPop(gitCommandOptions);
+      finally {
+        if (checkout) {
+          await gitCheckout(current, gitCommandOptions);
+        }
+        if (stashed) {
+          await gitStashPop(gitCommandOptions);
+        }
       }
     };
 

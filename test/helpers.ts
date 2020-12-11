@@ -73,21 +73,33 @@ export async function createRepository(dirPath: string, options?: {
   userName?: string;
   userEmail?: string;
   bare?: boolean;
+  fileName?: string;
+  fileContents?: string;
   initialCommit?: boolean;
 }): Promise<string> {
   const {
     dirName,
-    bare = false,
-    initialCommit = false,
     userName = 'Raise Version',
-    userEmail = 'raise@version.com'
+    userEmail = 'raise@version.com',
+    bare = false,
+    fileName,
+    fileContents = '',
+    initialCommit = false
   } = options || {};
   const repoPath = path.resolve(dirPath, dirName ? dirName : (bare ? 'repo-bare' : 'repo'));
   await exec(`git init ${repoPath}${bare ? ' --bare' : ''}`);
   await exec(`git config --local user.name ${escapeWhitespaces(userName)}`, repoPath);
   await exec(`git config --local user.email ${escapeWhitespaces(userEmail)}`, repoPath);
   if (initialCommit) {
-    await exec(`git commit --allow-empty -m ${escapeWhitespaces('Initial commit.')}`, repoPath);
+    const commitMessage = escapeWhitespaces('Initial commit.');
+    if (fileName) {
+      await createTextFile(path.resolve(repoPath, fileName), fileContents);
+      await exec(`git add ${escapeWhitespaces(fileName)}`, repoPath);
+      await exec(`git commit -m ${commitMessage}`, repoPath);
+    }
+    else {
+      await exec(`git commit --allow-empty -m ${commitMessage}`, repoPath);
+    }
   }
   return repoPath;
 }
