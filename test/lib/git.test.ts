@@ -33,12 +33,11 @@ describe('git', () => {
     const remoteName = 'origin';
     const initializationError = () => Promise.reject('Some data is not initialized');
 
-    beforeEach(() => {
+    const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
+    afterEach(() => {
+      restoreInitialWorkingDir();
       jest.resetModules();
     });
-
-    const restoreInitialWorkingDir = createRestoreInitialWorkingDir();
-    afterEach(() => restoreInitialWorkingDir());
 
     ['major', 'minor', 'patch'].forEach(release => {
       it(`gitflow ${release}: don't commit from non-development branch`, async() => {

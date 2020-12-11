@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import { raiseVerRcName, defaultRaiseVerConfig } from './constants';
 import { fileExists } from './utils';
 
-export async function getRaiseVerRcPath(workingDirPath = process.cwd()): Promise<string | null> {
+export async function getRaiseVerRcPath(workingDirPath = process.cwd()): Promise<string> {
   return path.resolve(workingDirPath, raiseVerRcName);
 }
 
