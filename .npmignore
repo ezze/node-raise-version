@@ -9,4 +9,5 @@ reports
 src
 test
 jest.*.ts
+tsconfig.json
 yarn*
