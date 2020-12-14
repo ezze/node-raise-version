@@ -16,7 +16,7 @@
   "types": "lib/raiseVersion.d.ts",
   "typings": "lib/raiseVersion.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run lint && npm run build",
+    "prepublishOnly": "npm run lint && npm run test && npm run build",
     "build": "npm run clean && tsc -p tsconfig.json && chmod +x bin/cli.js",
     "watch": "npm run clean && tsc -p tsconfig.json --watch",
     "clean": "rimraf bin lib",
