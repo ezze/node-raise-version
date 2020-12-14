@@ -2,6 +2,12 @@
   "name": "raise-version",
   "version": "0.3.2",
   "description": "Update and commit package version for Gitflow workflow",
+  "keywords": [
+    "version",
+    "semver",
+    "bump",
+    "gitflow"
+  ],
   "main": "lib/raiseVersion.js",
   "bin": {
     "raisever": "bin/cli.js",

@@ -149,7 +149,7 @@ describe('git', () => {
       await checkRepoUpdate(repoPath, { remoteRepoPath, version, releaseBranch, developBranch, packageJsonDiff });
     });
 
-    it(`gitflow ${release}: don't commit, just push to remote repository`, async() => {
+    it(`gitflow ${release}: don't commit but merge and push to remote repository`, async() => {
       const {
         repoPath, remoteRepoPath, developBranch,
         packageJsonPath, packageJsonContents, packageJsonDiff
