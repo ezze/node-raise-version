@@ -12,23 +12,33 @@ Update and commit package version for Gitflow workflow.
 
 This package makes bumping package version [according to semantic versioning](https://semver.org/) easier when using [Gitflow workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) just by running a single CLI command. It does the following things automatically:
 
-- Bump version in `package.json` in development branch (say, make a patch update from `1.2.2` to `1.2.3`).
+- Bump version in `package.json` in development branch (say, make a patch update from `0.3.2` to `0.4.0`).
 - Add release header with updated version and date in text changelog file:
   
    ```text
-   ## 1.2.3 (2020-12-14)
+   ## 0.4.0 (2020-12-14)
    ```
   
 - Commit changes in `package.json` and text changelog file with a message that looks like:
   
    ```
-   Raise version: 1.2.3
+   Raise version: 0.4.0
    ```
 
-- Merge changes to release branch and tag them as `1.2.3`.
+- Merge changes to release branch and tag them as `0.4.0`.
 - Push local development branch, release branch and new tags to remote repository.
 
 All the things mentioned above are configurable. The package can also be used for [centralized workflow](https://www.atlassian.com/git/tutorials/comparing-workflows#centralized-workflow).
+
+### Before
+
+![](img/before.png)
+
+### After
+
+![](img/after.png)
+
+![](img/changes.png)
 
 ## Installation
 
@@ -108,6 +118,8 @@ yarn add raise-version --dev
 
    `-s`, `--skip-update`           Don't update package.json file
 
+   In order to use `raise-version` with centralized workflow just set a value of `development` branch equal to `release` branch (`master`). `git.merge` parameter and  `--git-merge` CLI option make no sense in this case.
+
 3. Make changes to your source code, describe them in changelog file (if used) and raise a version:
 
    ```
@@ -115,7 +127,7 @@ yarn add raise-version --dev
    ```
 
    - `release` — semver part to update, one of the following: `major`, `minor`, `patch`;
-   - `options` — is CLI options overwriting default configuration from `.raiseverrc`.
+   - `options` — CLI options overwriting configuration from `.raiseverrc`.
 
 ## Examples
 
