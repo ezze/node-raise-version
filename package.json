@@ -1,17 +1,31 @@
 {
   "name": "raise-version",
-  "version": "0.3.2",
-  "description": "Update and publish package version for Gitflow worflow",
+  "version": "0.4.0",
+  "description": "Update and commit package version for Gitflow workflow",
+  "keywords": [
+    "version",
+    "semver",
+    "bump",
+    "gitflow"
+  ],
   "main": "lib/raiseVersion.js",
   "bin": {
-    "raisever": "bin/raiseVersion.js",
-    "raise-version": "bin/raiseVersion.js"
+    "raisever": "bin/cli.js",
+    "raise-version": "bin/cli.js"
   },
+  "types": "lib/raiseVersion.d.ts",
+  "typings": "lib/raiseVersion.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run lint",
-    "lint": "eslint bin lib",
-    "raise": "bin/raiseVersion.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublishOnly": "npm run lint && npm run test && npm run build",
+    "build": "npm run clean && tsc -p tsconfig.json && chmod +x bin/cli.js",
+    "watch": "npm run clean && tsc -p tsconfig.json --watch",
+    "clean": "rimraf bin lib",
+    "raise": "src/bin/cli.ts",
+    "test": "jest --config jest.config.ts --runInBand",
+    "test:coverage": "rimraf coverage && cross-env COVERAGE=yes jest --config jest.config.ts --runInBand",
+    "test:ci": "rimraf coverage reports && cross-env COVERAGE=yes JEST_JUNIT_OUTPUT_DIR=reports/junit jest --config jest.config.ts --ci --reporters=default --reporters=jest-junit --runInBand",
+    "lint": "eslint src",
+    "lint:test": "eslint test"
   },
   "repository": {
     "type": "git",
@@ -24,15 +38,29 @@
   },
   "homepage": "https://github.com/ezze/node-raise-version#readme",
   "dependencies": {
-    "camelcase": "^6.2.0",
-    "execa": "^4.1.0",
+    "execa": "^5.0.0",
     "fs-extra": "^9.0.1",
     "moment": "^2.29.1",
-    "semver": "^7.3.2",
-    "yargs": "^16.1.0"
+    "semver": "^7.3.4",
+    "yargs": "^16.2.0"
   },
   "devDependencies": {
-    "eslint": "^7.12.1",
-    "eslint-config-ezze": "^0.9.0"
+    "@types/fs-extra": "^9.0.5",
+    "@types/jest": "^26.0.19",
+    "@types/node": "^14.14.12",
+    "@types/semver": "^7.3.4",
+    "@types/yargs": "^15.0.11",
+    "@typescript-eslint/eslint-plugin": "^4.9.1",
+    "@typescript-eslint/parser": "^4.9.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.15.0",
+    "eslint-config-ezze-ts": "^0.10.1",
+    "jest": "^26.6.3",
+    "jest-junit": "^12.0.0",
+    "mock-argv": "^1.1.9",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.4.4",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.3"
   }
 }

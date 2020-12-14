@@ -1,6 +1,9 @@
 {
-  "extends": "ezze",
+  "extends": "ezze-ts",
   "env": {
     "node": true
+  },
+  "rules": {
+    "@typescript-eslint/ban-ts-comment": "off"
   }
 }

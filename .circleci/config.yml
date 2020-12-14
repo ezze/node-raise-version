@@ -1,0 +1,73 @@
+version: 2.1
+orbs:
+  codecov: codecov/codecov@1.0.2
+jobs:
+  install:
+    docker:
+      - image: node:14
+    steps:
+      - checkout
+      - restore_cache:
+            name: Restore Yarn dependencies cache
+            keys:
+              - yarn-packages-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install dependencies
+          command: pwd && ls -la && yarn install --immutable && ls -la
+      - save_cache:
+          name: Save Yarn dependencies cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./*
+
+  lint:
+    docker:
+      - image: node:14
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Lint source code
+          command: yarn lint
+
+  lint-test:
+    docker:
+      - image: node:14
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Lint test code
+          command: yarn lint:test
+
+  test:
+    docker:
+      - image: node:14
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Test
+          command: yarn test:ci
+      - codecov/upload:
+          file: coverage/coverage-final.json
+      - store_test_results:
+          path: reports/junit
+
+workflows:
+  main:
+    jobs:
+      - install
+      - lint:
+          requires:
+            - install
+      - lint-test:
+          requires:
+            - install
+      - test:
+          requires:
+            - install

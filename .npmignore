@@ -1,5 +1,13 @@
+.circleci
 .eslintrc
 .idea
 .gitgnore
 .raiseverrc
 *.log
+coverage
+reports
+src
+test
+jest.*.ts
+tsconfig.json
+yarn*

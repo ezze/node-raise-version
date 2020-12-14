@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "rootDir": "..",
+    "outDir": "out",
+    "declaration": false,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["../types/*.d.ts", "**/*", "../src/**/*"],
+  "exclude": []
+}
