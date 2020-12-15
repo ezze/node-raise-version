@@ -204,7 +204,7 @@ Basic usage examples used below considers that `.raiseverrc` has default configu
 4. Don't update, don't commit and don't merge anything, just push to remote repository only:
 
    ```
-   raise-version --skip-update --changelog=false --commit=false --merge --git-push
+   raise-version --skip-update --changelog=false --commit=false --merge=false --git-push
    ```
     
 ## Programmatic usage
