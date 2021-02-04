@@ -1,5 +1,7 @@
 # Changelog
 
+- Examples in docs are fixed.
+
 ## 0.4.0 (2020-12-14)
 
 - Source code is migrated to TypeScript. (https://github.com/ezze/node-raise-version/issues/7)

@@ -198,13 +198,13 @@ Basic usage examples used below considers that `.raiseverrc` has default configu
 3. Don't update version in `package.json` and `CHANGELOG.md`, don't commit but merge from `development` branch to `release` branch and push changes to remote repository:
 
    ```
-   raise-version --skip-update --changelog=false --commit=false --git-push
+   raise-version --skip-update --changelog=false --git-commit=false --git-push
    ```
 
 4. Don't update, don't commit and don't merge anything, just push to remote repository only:
 
    ```
-   raise-version --skip-update --changelog=false --commit=false --merge=false --git-push
+   raise-version --skip-update --changelog=false --git-commit=false --git-merge=false --git-push
    ```
     
 ## Programmatic usage
