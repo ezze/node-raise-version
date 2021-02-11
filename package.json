@@ -20,7 +20,7 @@
     "build": "npm run clean && tsc -p tsconfig.json && chmod +x bin/cli.js",
     "watch": "npm run clean && tsc -p tsconfig.json --watch",
     "clean": "rimraf bin lib",
-    "raise": "src/bin/cli.ts",
+    "raise": "node bin/cli.js",
     "test": "jest --config jest.config.ts --runInBand",
     "test:coverage": "rimraf coverage && cross-env COVERAGE=yes jest --config jest.config.ts --runInBand",
     "test:ci": "rimraf coverage reports && cross-env COVERAGE=yes JEST_JUNIT_OUTPUT_DIR=reports/junit jest --config jest.config.ts --ci --reporters=default --reporters=jest-junit --runInBand",
