@@ -1,4 +1,4 @@
-export default function fail(message: string | null, error: Error | null): void {
+export = function fail(message: string | null, error: Error | null): void {
   if (message) {
     console.error(message);
   }

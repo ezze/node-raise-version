@@ -4,7 +4,7 @@ import { getPackageJsonPath, getPackageJsonVersion, updatePackageJsonVersion } f
 import { updateChangeLogVersion } from './changeLog';
 import { updateGitRepositoryVersion } from './git';
 
-export default async function raiseVersion(options: RaiseVersionConfigOptional = {}): Promise<string> {
+export = async function raiseVersion(options: RaiseVersionConfigOptional = {}): Promise<string> {
   const packageJsonPath = await getPackageJsonPath();
   if (!packageJsonPath) {
     return Promise.reject('Unable to locate package.json file');

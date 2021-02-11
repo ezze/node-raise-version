@@ -16,4 +16,4 @@ async function raiseVersion(): Promise<void> {
     .parse(process.argv.slice(2));
 }
 
-export default raiseVersion;
+export = raiseVersion;
