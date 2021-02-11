@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.5.0 (2021-02-12)
+
 - The library uses `module.exports` to export entities keeping Common.js module requiring without `.default`.
 - `raise` npm script is fixed.
 - Examples in docs are fixed.
