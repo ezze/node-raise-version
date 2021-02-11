@@ -1,5 +1,6 @@
 # Changelog
 
+- The library uses `module.exports` to export entities keeping Common.js module requiring without `.default`. 
 - Examples in docs are fixed.
 
 ## 0.4.0 (2020-12-14)
